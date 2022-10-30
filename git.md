@@ -17,7 +17,7 @@ git可以管理你的版本信息。我们常用的版本控制大多是使用�
 
 ### 1.3.1团队内部协作
 
-![image-20221029144048058](C:\Users\17\AppData\Roaming\Typora\typora-user-images\image-20221029144048058.png)
+![img1](img/img.png)
 
 - 项目经理王经理创建了一个本地库和一个远程库，项目经理将本地库推送至远程库（push）
 - 职员小吴将远程库中的内容克隆至自己的本地库（clone）
@@ -26,7 +26,7 @@ git可以管理你的版本信息。我们常用的版本控制大多是使用�
 
 ### 1.3.2团队外部协作
 
-![image-20221029144935412](C:\Users\17\AppData\Roaming\Typora\typora-user-images\image-20221029144935412.png)
+![image_1](img/img_1.png)
 
 - 项目经理王经理创建了一个本地库和一个远程库，项目经理将本地库推送至远程库（push）
 - 外部职员小王将王经理远程库中的内容fork至自己的远程库（fork）
@@ -147,7 +147,7 @@ $ git diff [本地库中历史版本] [文件名]
 
 在版本控制过程中，使用多条线同时推进多个任务。
 
-![image-20221029160438007](C:\Users\17\AppData\Roaming\Typora\typora-user-images\image-20221029160438007.png)
+![img_2](img.png)
 
 **好处：**
 
