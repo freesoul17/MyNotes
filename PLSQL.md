@@ -6,7 +6,7 @@
 
 - 与SQL语言紧密集成。
 - 减小网络流量，提高应用程序的运行性能。
-- <img src="C:\Users\17\AppData\Roaming\Typora\typora-user-images\image-20221029210702977.png" alt="image-20221029210702977" style="zoom: 50%;" />
+- <img src="img/image-20221029210702977.png" alt="image-20221029210702977" style="zoom: 50%;" />
 - 模块化的程序设计功能，提高了系统可靠性。
 - 服务器端程序设计，可移植性好
 
@@ -255,7 +255,7 @@ BEGIN
 END
 ```
 
-<img src="C:\Users\17\AppData\Roaming\Typora\typora-user-images\image-20221029215513164.png" alt="image-20221029215513164" style="zoom: 50%;" />
+<img src="img\image-20221029215513164.png" alt="image-20221029215513164" style="zoom: 50%;" />
 
 如果要查询当前DML语句操作的记录的信息，可以在DML语句末尾使用**RETURNING**语句返回该记录的信息。
 
@@ -486,7 +486,7 @@ END;
 
 定义游标、打开游标、检索游标、关闭游标
 
-<img src="C:\Users\17\AppData\Roaming\Typora\typora-user-images\image-20221029231007058.png" alt="image-20221029231007058" style="zoom:50%;" />
+<img src="img\image-20221029231007058.png" alt="image-20221029231007058" style="zoom:50%;" />
 
 根据输入的部门号查询某个部门的员工信息，部门号在程序运行时指定。
 
@@ -1630,7 +1630,8 @@ EXCEPTION
 END [trigger_name];
 ```
 
-**语句级触发器** 
+##### **语句级触发器** 
+
 在默认情况下创建的DML触发器为语句级触发器，即触发事件发生后，触发器只执行一次
 
 创建一个触发器，禁止在休息日改变雇员信息
@@ -1674,5 +1675,100 @@ BEGIN
     END LOOP;
   END IF;
 END trg_emp_dml; 
+```
+
+##### **行级触发器**
+
+- 行级触发器是指执行DML操作时，每操作一个记录，触发器就执行一次，一个DML操作涉及多少个记录，触发器就执行多少次。
+- 在行级触发器中可以使用WHEN条件，进一步控制触发器的执行。
+- 在行级触发器中引入了:old和:new 两个标识符，来访问和操作当前被处理记录中的数据。 
+
+**标识符**
+:old和:new作为triggering_table%ROWTYPE类型的两个变量
+
+在不同触发事件中，:old和:new的意义不同
+
+| 触发事件 | :old                     | :new                       |
+| -------- | ------------------------ | -------------------------- |
+| INSERT   | 未定义，所有字段都为NULL | 当语句完成时，被插入的记录 |
+| UPDATE   | 更新前原始记录           | 当语句完成时，更新后的记录 |
+| DELETE   | 记录被删除前的原始值     | 未定义，所有字段都为NULL   |
+
+引用方式：
+      :old.field和:new.field （执行部分）
+       old.field 和new.field   (WHEN条件中)
+注意事项：
+
+- 是伪记录，不能作为整个记录进行赋值或引用 
+- 不能传递给带triggering_table%ROWTYPE参数的过程和函数 
+- 如果触发器是建立在嵌套表上，:old和:new都执行嵌套表的行，:parent指向父表中的当前行。
+
+为emp表创建一个触发器，当插入新员工时显示新员工的员工号、员工名；当更新员工工资时，显示修改前后员工工资；当删除员工时，显示被删除的员工号、员工名。 
+
+```plsql
+CREATE OR REPLACE TRIGGER trg_emp_dml_row
+BEFORE INSERT OR UPDATE OR DELETE ON emp
+FOR EACH ROW
+BEGIN
+   IF INSERTING THEN 
+         DBMS_OUTPUT.PUT_LINE(:new.empno||' '||:new.ename);
+   ELSIF UPDATING THEN
+         DBMS_OUTPUT.PUT_LINE(:old.sal||' '||:new.sal);
+   ELSE
+         DBMS_OUTPUT.PUT_LINE(:old.empno||' '||:old.ename);
+   END IF;
+END trg_emp_dml_row;
+```
+
+在行级触发器中，可以使用WHEN子句进一步控制触发器的执行。
+
+例如，修改员工工资时，保证修改后的工资高于修改前的工资。
+
+```plsql
+CREATE OR REPLACE TRIGGER trg_emp_update_row
+BEFORE UPDATE OF sal ON emp
+FOR EACH ROW
+WHEN(new.sal<=old.sal)
+BEGIN
+    RAISE_APPLICATION_ERROR(20001,'The salary is lower!');
+END trg_emp_update_row; 
+```
+
+##### 变异表触发器
+
+变异表是指激发触发器的DML语句所操作的表，即触发器为之定义的表，或者由于DELETE CASCADE操作而需要修改的表，即当前表的子表。
+
+约束表是指由于引用完整性约束而需要从中读取或修改数据的表，即当前表的父表。
+
+当对一个表创建行级触发器，或创建由DELETE CASCADE操作而激发的语句级触发器时，有下列两条限制：
+
+- 不能读取或修改任何触发语句的变异表；
+- 不能读取或修改触发表的一个约束表的PRIMARY KEY，UNIQUE 或FOREIGN KEY关键字的列, 但可以修改其他列。
+
+注意
+
+- 如果INSERT…VALUES语句只影响一行，那么该语句的行级前触发器不会把触发表当做变异表对待。
+- INSERT INTO table SELECT…等语句总是把触发表当做变异表，即使子查询仅仅返回一条记录。 
+
+#### 8.2.2管理触发器
+
+```plsql
+激活或禁用触发器
+可以激活或禁用某个触发器。语法为
+ALTER TRIGGER triggername ENABLE|DISABLE;
+激活或禁用某个表对象上的所有触发器。语法为
+ALTER TABLE table_name ENABLE|DISABLE ALL 
+  TRIGGERS;
+修改触发器
+CREATE OR REPLACE TRIGGER trigger_name
+重新编译触发器
+ALTER TRIGGER trigger_name COMPILE; 
+查看触发器及其源代码
+查询数据字典视图USER_TRIGGERS
+SELECT trigger_name,trigger_type,
+table_name,trigger_body FROM user_triggers;
+删除触发器
+当触发器不再需要时，可以使用DROP TRIGGER语句删除触发器。
+DROP TRIGGER trigger_name; 
 ```
 

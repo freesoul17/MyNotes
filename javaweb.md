@@ -913,8 +913,6 @@ jsp 的 page 指令可以修改 jsp 页面中一些重要的属性，或者行�
 - autoFlush 属性： 设置当 out 输出流缓冲区满了之后，是否自动刷新冲级区。默认值是 true。
 - buffer 属性： 设置 out 缓冲区的大小。默认是 8kb
 
-
-
 - errorPage 属性： 设置当 jsp 页面运行时出错，自动跳转去的错误页面路径。
 - isErrorPage 属性 ：设置当前 jsp 页面是否是错误信息页面。默认是 false。如果是 true ，可以获取异常信息。
 - session 属性 ：设置访问当前 jsp 页面，是否会创建 HttpSession 对象。默认是 true。
@@ -964,7 +962,7 @@ jsp 的 page 指令可以修改 jsp 页面中一些重要的属性，或者行�
 #### 表达式脚本（常用）
 
 ```jsp
-<%=表达式 % > 
+<%= 变量/返回值/表达式 % > 
 ```
 
 作用：在 jsp 页面上输出数据。
@@ -975,11 +973,13 @@ jsp 的 page 指令可以修改 jsp 页面中一些重要的属性，或者行�
 - 表达式脚本都会被翻译成为 out.print()输出到页面上
 - 由于表达式脚本翻译的内容都在 _jspService() 方法中,所以 _jspService()方法中的对象都可以直接使用。 
 - **表达式脚本中的表达式不能以分号结束。**
+- 表达式中不能出现多条语句
+- 表达式中的内容一定是字符串类型，或者能通过toString()转换为字符串
 
 #### 代码脚本 
 
 ```jsp
- <% java 语句 %>
+ <% java语句 %>
 ```
 
 作用：可以在 jsp 页面中，编写我们自己需要的功能（写的是 java 语句）。
@@ -1019,7 +1019,7 @@ jsp 的 page 指令可以修改 jsp 页面中一些重要的属性，或者行�
 	}
 %>
 	</table>
-<%--3.翻译后java文件中_jspService方法内的代码都可以写--%>
+<%-- 3.翻译后java文件中_jspService方法内的代码都可以写 --%>
 <%
     String username = request.getParameter("username");
     System.out.println("用户名的请求参数值是：" + username)
