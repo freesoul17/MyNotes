@@ -100,13 +100,13 @@ $ git reset HEAD 文件名
 ### 2.6 提交文件到本地仓库
 git commit 将缓存区内容添加到仓库中，可以在后面加-m选项，表示给版本信息添加注释，如：
 ```shell
-$ git commit -m "第一次版本提交" 文件名
-$ git commit -m "新增了xxx功能" 文件名
+$ git commit -m "第一次版本提交" 
+$ git commit -m "新增了xxx功能" 
 ```
 很多时候我们觉得先添加到缓存区在提交到仓库很麻烦时，可以在后面加 -a，这样就直接提交到仓库了，如：
 ```shell
-$ git commit -am "第一次版本提交" 文件名
-$ git commit -am "新增了xxx功能" 文件名
+$ git commit -am "第一次版本提交" 
+$ git commit -am "新增了xxx功能" 
 ```
 提交仓库后，即使你删除或修改了文件，也可以在.git文件中找到以前的版本。
 ### 2.7 查看提交记录
