@@ -714,7 +714,7 @@ fn(1,2,3);
 - 函数的形参实际上就是局部变量
 
 
-3.3、区别
+区别
 
 - 全局变量：在任何一个地方都可以使用，只有在浏览器关闭时才会被销毁，因此比较占内存
 - 局部变量：只在函数内部使用，当其所在的代码块被执行时，会被初始化；当代码块运行结束后，就会被销毁，因此更节省内存空间
@@ -902,8 +902,6 @@ console.log(now);
 
 **Data中的方法**
 
-
-
 方法名	|说明
 -|-
 getFullYear()|	获取当年
@@ -948,15 +946,15 @@ W3C 已经定义了一系列的 DOM 接口，通过这些 DOM 接口可以改变
 
 ## 4.2、获取元素
 
-| 方法                                    | 描述                             |
-| --------------------------------------- | -------------------------------- |
-| doucument.getElementByld('id')          | 根据ID获取                       |
-| doucument.getElementsByTagName(标签名') | 根据标签名获取                   |
-| document.getElementsByClassName('类名') | 根据类名获取                     |
-| document.querySelector('选择器')        | 根据指定选择器返回第一个元素对象 |
-| document.querySelectorAll('选择器')     | 根据指定选择器返回所有元素对象   |
-| document.body                           | 返回body元素对象                 |
-| document.documentElement;               | 返回html元素对象                 |
+| 方法                                    | 描述                                       |
+| --------------------------------------- | ------------------------------------------ |
+| doucument.getElementByld('id')          | 根据ID获取，返回元素                       |
+| doucument.getElementsByTagName(标签名') | 根据标签名获取，返回伪数组，必须指明父元素 |
+| document.getElementsByClassName('类名') | 根据类名获取，返回伪数组                   |
+| document.querySelector('选择器')        | 根据指定选择器返回第一个元素对象           |
+| document.querySelectorAll('选择器')     | 根据指定选择器返回所有元素对象             |
+| document.body                           | 返回body元素对象                           |
+| document.documentElement;               | 返回html元素对象                           |
 
  注意：querySelector 和 querySelectorAll 里面的选择器需要加符号,比如: document.querySelector('#nav');
 
@@ -1002,8 +1000,7 @@ element.innerHTML
 **改变元素属性**
 
 ```js
-img.src = "xxx";
-
+element.属性 = "xxx";
 input.value = "xxx";
 input.type = "xxx";
 input.checked = "xxx";
@@ -1014,6 +1011,7 @@ input.disabled = true / false;
 **改变样式属性**
 
 ```js
+element.style.属性 = "xxx";
 div.style.backgroundColor = 'pink';
 div.style.width = '250px';
 ```
@@ -1024,22 +1022,35 @@ div.style.width = '250px';
 element.属性;
 ```
 
+**设置自定义的属性**
+
+```js
+element.setAttribute('属性','值');//自定义属性推荐使用“data-”开头
+```
+
 **获取自定义的属性**
 
 ```js
 element.getAttribute('属性');
-```
+element.dataset
+// h5新增的获取自定义属性的方法 它只能获取data-开头的 IE11才开始支持
+// dataset 是一个集合里面存放了所有以data开头的自定义属性
 
-**设置属性值**
-
-```js
-element.属性 = '值';
-```
-
-**设置自定义的属性**
-
-```js
-element.setAttribute('属性','值');
+<body>
+    <div data-index="2" data-list-name="andy"></div>
+    <script>
+        var div = document.querySelector('div');        
+        div.setAttribute('data-time', 20);
+        console.log(div.getAttribute('data-index'));//2
+        console.log(div.getAttribute('data-list-name'));//andy
+        console.log(div.dataset);//DOMStringMap {index: '2', listName: 'andy', time: '20'}
+        console.log(div.dataset.index);//2
+        console.log(div.dataset['index']);//2
+        // 如果自定义属性里面有多个-链接的单词，我们获取的时候采取驼峰命名法
+        console.log(div.dataset.listName);//andy
+        console.log(div.dataset['listName']);//andy
+    </script>
+</body>
 ```
 
 **移除属性**
@@ -1064,41 +1075,43 @@ element.removeAttribute('属性');
 node.parentNode
 ```
 
-parentNode属性可以返回某节点的父结点，注意是最近的一个父结点
-如果指定的节点没有父结点则返回nul
+- parentNode属性可以返回某节点的父结点，注意是最近的一个父结点
+- 如果指定的节点没有父结点则返回nul
+
 **子结点**
 
 ```js
 parentNode.childNodes(标准)
 ```
 
-parentNode.childNodes 返回包含指定节点的子节点的集合，该集合为即时更新的集合
-返回值包含了所有的子结点，包括元素节点，文本节点等
-如果只想要获得里面的元素节点，则需要专门处理。所以我们一般不提倡使用childNodes
+- parentNode.childNodes 返回包含指定节点的子节点的集合，该集合为即时更新的集合
+- 返回值包含了所有的子结点，包括元素节点，文本节点等
+- 如果只想要获得里面的元素节点，则需要专门处理。所以我们一般不提倡使用childNodes
 
 ```js
 parentNode.children(非标准)
 ```
 
-parentNode.children 是一个只读属性，返回所有的子元素节点
-它只返回子元素节点，其余节点不返回
-虽然 children 是一个非标准，但是得到了各个浏览器的支持，因此我们可以放心使用
+- parentNode.children 是一个只读属性，返回所有的子元素节点
+- 它只返回子元素节点，其余节点不返回
+- 虽然 children 是一个非标准，但是得到了各个浏览器的支持，因此我们可以放心使用
+
 **第一个子结点**
 
 ```js
 parentNode.firstChild
 ```
 
-firstChild 返回第一个子节点，找不到则返回null
-同样，也是包含所有的节点
-**最后一个子结点**
+- firstChild 返回第一个子节点，找不到则返回null
+- 返回值包含了所有的子结点，包括元素节点，文本节点等
+  **最后一个子结点**
 
 ```js
 parentNode.lastChild
 ```
 
-lastChild 返回最后一个子节点，找不到则返回null
-同样，也是包含所有的节点
+- lastChild 返回最后一个子节点，找不到则返回null
+- 返回值包含了所有的子结点，包括元素节点，文本节点等
 
 **第一个子结点(兼容性)**
 
@@ -1106,16 +1119,20 @@ lastChild 返回最后一个子节点，找不到则返回null
 parentNode.firstElementChild
 ```
 
-firstElementChild 返回第一个子节点，找不到则返回null
-有兼容性问题，IE9以上才支持
+- firstElementChild 返回第一个子元素节点，找不到则返回null。
+- 只返回子元素节点，其余节点不返回
+- 有兼容性问题，IE9以上才支持
+
 **最后一个子结点(兼容性)**
 
 ```js
 parentNode.lastElementChild
 ```
 
-lastElementChild 返回最后一个子节点，找不到则返回null
-有兼容性问题，IE9以上才支持
+- lastElementChild 返回最后一个子元素节点，找不到则返回null
+- 只返回子元素节点，其余节点不返回
+- 有兼容性问题，IE9以上才支持
+
 **解决方案**
 
 - 如果想要第一个子元素节点，可以使用 parentNode.chilren[0]
@@ -1131,17 +1148,17 @@ lastElementChild 返回最后一个子节点，找不到则返回null
 node.nextSibling
 ```
 
-nextSibling 返回当前元素的下一个兄弟元素节点，找不到则返回null
-同样，也是包含所有的节点
+- nextSibling 返回当前元素的下一个兄弟元素节点，找不到则返回null。
+- 返回值包含了所有的子结点，包括元素节点，文本节点等
+
 **上一个兄弟节点**
 
 ```js
 node.previousSibling
 ```
 
-previousSibling 返回当前元素上一个兄弟元素节点，找不到则返回null
-
-同样，也是包含所有的节点
+- previousSibling 返回当前元素上一个兄弟元素节点，找不到则返回null。
+- 返回值包含了所有的子结点，包括元素节点，文本节点等
 
 **下一个兄弟节点(兼容性)**
 
@@ -1149,16 +1166,19 @@ previousSibling 返回当前元素上一个兄弟元素节点，找不到则返�
 node.nextElementSibling
 ```
 
-nextElementSibling 返回当前元素下一个兄弟元素节点，找不到则返回null
-有兼容性问题，IE9才支持
+- nextElementSibling 返回当前元素下一个兄弟元素节点，找不到则返回null。
+- 只返回子元素节点，其余节点不返回
+- 有兼容性问题，IE9才支持
+
 **上一个兄弟节点(兼容性)**
 
 ```js
 node.previousElementSibling
 ```
 
-previousElementSibling 返回当前元素上一个兄弟元素节点，找不到则返回null
-有兼容性问题，IE9才支持
+- previousElementSibling 返回当前元素上一个兄弟元素节点，找不到则返回null。
+- 只返回子元素节点，其余节点不返回
+- 有兼容性问题，IE9才支持
 
 #### 创建节点
 
@@ -1197,9 +1217,9 @@ node.removeChild()方法从 DOM 中删除一个子节点，返回删除的节点
 node.cloneNode()
 ```
 
-node.cloneNode()方法返回调用该方法的节点的一个副本。 也称为克隆节点/拷贝节点
-如果括号参数为空或者为 false ，则是浅拷贝，即只克隆复制节点本身，不克隆里面的子节点
-如果括号参数为 true ，则是深度拷贝，会复制节点本身以及里面所有的子节点
+- node.cloneNode()方法返回调用该方法的节点的一个副本。 也称为克隆节点/拷贝节点
+- 如果括号参数为空或者为 false ，则是浅拷贝，即只克隆复制节点本身，不克隆里面的子节点
+- 如果括号参数为 true ，则是深度拷贝，会复制节点本身以及里面所有的子节点
 
 ## 4.4、事件高级
 
@@ -1323,8 +1343,8 @@ e.stopPropagation()|	阻止冒泡 标准
 
 e.target 和 this 的区别：
 
-this 是事件绑定的元素， 这个函数的调用者（绑定这个事件的元素）
-e.target 是事件触发的元素。
+- this 是事件绑定的元素， 这个函数的调用者（绑定这个事件的元素）
+- e.target 是事件触发的元素。
 
 # 五、BOM
 
