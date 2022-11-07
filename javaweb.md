@@ -1,13 +1,13 @@
-# Servlet
+# 第一章、Servlet
 
-## 什么是 Servlet 
+## 1.1 什么是 Servlet 
 
 - Servlet 是 JavaEE 规范之一。规范就是接口 
 - Servlet 就 JavaWeb 三大组件之一。
 - 三大组件分别是：**Servlet 程序、Filter 过滤器、Listener 监听器**。 
 - Servlet 是运行在服务器上的一个 java 小程序，它可以**接收客户端发送过来的请求，并响应数据给客户端**。 
 
-## 手动实现 Servlet 程序 
+## 1.2 手动实现 Servlet 程序 
 ①编写一个类去实现 Servlet 接口 , 实现 service 方法，处理请求，并响应数据
 
 ```java 
@@ -75,7 +75,7 @@ public class HelloServlet implements Servlet {
 </web-app>
 ```
 
-## Servlet 的生命周期 
+## 1.3 Servlet 的生命周期 
 
 1、执行 Servlet 构造器方法 
 
@@ -87,7 +87,7 @@ public class HelloServlet implements Servlet {
 
 4、执行 destroy 销毁方法 ，在 web工程停止的时候调用
 
-## GET 和 POST 请求的分发处
+## 1.4 GET 和 POST 请求的分发处
 
 由于**service**方法无论是get请求还是post请求都会响应，但是**我们想要的是get请求执行一种方法，post请求可以执行另一种方法**。**ServletRequest的子类HttpServletRequest中有getMethod()方法，用于获取是哪种请求。**
 
@@ -135,7 +135,7 @@ public void doPost(){
 }
 ```
 
-## 通过继承 HttpServlet 实现 Servlet 程序 
+## 1.5 通过继承 HttpServlet 实现 Servlet 程序 
 
 **一般在实际项目开发中，都是使用继承 HttpServlet 类的方式去实现 Servlet 程序。** 
 
@@ -182,271 +182,43 @@ public class HelloServlet2 extends HttpServlet {
 </servlet-mapping>
 ```
 
-## Servlet类的继承体系
+## 1.6 Servlet类的继承体系
 
-Interface Servlet : Servlet接口，只负责定义Servlet程序的访问规范
+- Interface Servlet : Servlet接口，只负责定义Servlet程序的访问规范
 
-Class GenericServlet：GenericServlet类实现了Servlet接口，做了很多空的实现，并持有一个ServletConfig类的引用，并对ServletConfig的使用做一些方法。
+- Class GenericServlet：GenericServlet类实现了Servlet接口，做了很多空的实现，并持有一个ServletConfig类的引用，并对ServletConfig的使用做一些方法。
 
-Class HttpServlet：HttpServlet继承于GenericServlet。HttpServlet抽象类实现了service()方法，并实现了请求的分发处理，并未具体写出doGet()/doPost()，负责抛异常。
+- Class HttpServlet：HttpServlet继承于GenericServlet。HttpServlet抽象类实现了service()方法，并实现了请求的分发处理，并未具体写出doGet()/doPost()，负责抛异常。
 
-自定义的Servlet程序：重写具体的doGet()/doPost()方法。
-
-# ServletConfig类
-
-ServletConfig类是Servlet 程序的配置信息类。
-
- Servlet 程序和 ServletConfig 对象都是由 Tomcat 负责创建，我们负责使用。 Servlet 程序默认是第一次访问的时候创建，**ServletConfig 在每个 Servlet 程序创建时，就创建一个对应的 ServletConfig 对象**。
-
-## ServletConfig 类的三大作用 
-
-1、可以获取 Servlet 程序的别名 servlet-name 的值 
-
-2、获取初始化参数 init-param 
-
-3、获取 ServletContext
-
-**web.xml配置**
-
-```XML
-<servlet>
-     <servlet-name>HelloServlet</servlet-name>
-     <servlet-class>com.x17.servlets.HelloServlet</servlet-class>
-    <!--init-param 是初始化参数-->
-    <init-param>
-        <!--是参数名-->
-        <param-name>username</param-name>
-        <!--是参数值-->
-        <param-value>root</param-value>
-    </init-param>
-    <!--init-param 是初始化参数-->
-        <init-param>
-        <!--是参数名-->
-        <param-name>url</param-name>
-        <!--是参数值-->
-        <param-value>jdbc:mysql://localhost:3306/hello</param-value>
-    </init-param>
-</servlet>
-```
-
-在哪个类中使用就在哪个类的**<servlet>**中配置。ServletConfig类只能获取自己对应的初始化参数。
-
-```java
-// 1、可以获取 Servlet 程序的别名 servlet-name 的值
-System.out.println("HelloServlet 程序的别名是:" + servletConfig.getServletName());
-// 2、获取初始化参数 init-param
-System.out.println("初始化参数 username 的值是;" + servletConfig.getInitParameter("username"));
-System.out.println("初始化参数 url 的值是;" + servletConfig.getInitParameter("url"));
-// 3、获取 ServletContext 对象
-System.out.println(servletConfig.getServletContext());
-```
-
-注意：重写public void init(ServletConfig config)方法时，一定要调用父类中的init方法，否则servletConfig.getInitParameter(String var1)将会出错（空指针异常）。
-
-源代码：
-
-```java
-
-private transient ServletConfig config;
-public void init(ServletConfig config) throws ServletException {
-        this.config = config;
-        this.init();
-    }
-```
-
-原因：GenericServlet类将config保存起来了。子类重写不调用父类中的init方法的话，父类保存操作就会丢失。
-
-# ServletContext 类
-
-## 什么是 ServletContext? 
-
-1、ServletContext 是一个接口，它**表示 Servlet 上下文对象**。
-
-2、一个 web 工程，只有一个 ServletContext 对象实例。 
-
-3、ServletContext 对象是一个域对象。 
-
-4、**ServletContext 是在 web 工程部署启动的时候创建。在 web 工程停止的时候销毁。** 
-
-### 什么是域对象? 
-
-域对象，是可以像 Map 一样存取数据的对象，叫域对象。 这里的**域指的是存取数据的操作范围，整个 web 工程。**
-
-|        |     存数据     |     取数据     |     删除数据      |
-| :----: | :------------: | :------------: | :---------------: |
-|  Map   |     put()      |     get()      |     remove()      |
-| 域对象 | setAttribute() | getAttribute() | removeAttribute() |
-
- 
-
-## ServletContext 类的四个作用 
-
-1、获取 web.xml 中配置的上下文参数 context-param 
-
-2、获取当前的工程路径，格式: /工程路径 
-
-3、获取工程部署后在服务器硬盘上的绝对路径 
-
-4、像 Map 一样存取数据
-
-**web.xml配置文件**
-
-```XML
-<!--context-param 是上下文参数(它属于整个 web 工程)-->
-<context-param>
-    <param-name>username</param-name>
-    <param-value>context</param-value>
-</context-param>
-<servlet>
-    <servlet-name>ContextServlet</servlet-name>
-    <servlet-class>com.x17.servlets.ContextServlet</servlet-class>
-</servlet>
-<servlet-mapping>
-    <servlet-name>ContextServlet</servlet-name>
-     <url-pattern>/contextServlet</url-pattern>
-</servlet-mapping>
-```
-
-**java代码**
-
-```java
-//        1、获取 web.xml 中配置的上下文参数 context-param
-        ServletContext context = getServletConfig().getServletContext();
-/**也可直接ServletContext context = getServletContext();
-原因：在GenericServlet类中
-源代码：public ServletContext getServletContext() {
-        return this.getServletConfig().getServletContext();
-    }
-*/
-        String username = context.getInitParameter("username");
-//        2、获取当前的工程路径，格式: /工程路径
-        String contextPath = context.getContextPath();
-//        3、获取工程部署后在服务器硬盘上的绝对路径
-//        斜杠被服务器解析地址为:http://ip:port/工程名/ 映射到IDEA代码的web目录
-        String realPath = context.getRealPath("/");
-//        4、像 Map 一样存取数据
-        context.setAttribute("key","nalue");
-```
-
-由于ServletContext 是在 web 工程部署启动的时候创建。在 web 工程停止的时候销毁，在setAttribute之前key拿不到，在setAttribute之后，可以一直获取，其他类中的ServletContext对象也能获取。
-
-# http协议
-
-### GET请求
-
-请求行 (1) 请求的方式 GET (2) 请求的资源路径[+?+请求参数] (3) 请求的协议的版本号 HTTP/1.1
-
-请求头 key : value 组成 不同的键值对，表示不同的含义
-
-```
-GET /javaweb1/request HTTP/1.1  
-Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9
-Accept-Encoding: gzip, deflate, br
-Accept-Language: zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6
-Connection: keep-alive
-Cookie: JSESSIONID=9FF96178180A429BBA94B88A832A9C02
-Host: localhost:8080
-Sec-Fetch-Dest: document
-Sec-Fetch-Mode: navigate
-Sec-Fetch-Site: none
-Sec-Fetch-User: ?1
-Upgrade-Insecure-Requests: 1
-User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.127 Safari/537.36 Edg/100.0.1185.44
-sec-ch-ua: " Not A;Brand";v="99", "Chromium";v="100", "Microsoft Edge";v="100"
-sec-ch-ua-mobile: ?0
-sec-ch-ua-platform: "Windows"
-```
-
-### POST请求
-
-请求行 (1) 请求的方式 POST (2) 请求的资源路径[+?+请求参数] (3) 请求的协议的版本号 HTTP/1.1
-
-请求头 key : value 组成 不同的键值对，表示不同的含义
-
-```
-POST /javaweb/hello HTTP/1.1
-Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9
-Accept-Encoding: gzip, deflate, br
-Accept-Language: zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6
-Cache-Control: max-age=0
-Connection: keep-alive
-Content-Length: 0
-Content-Type: application/x-www-form-urlencoded
-Host: localhost:8080
-Origin: http://localhost:8080
-Referer: http://localhost:8080/javaweb/a.html
-Sec-Fetch-Dest: document
-Sec-Fetch-Mode: navigate
-Sec-Fetch-Site: same-origin
-Sec-Fetch-User: ?1
-Upgrade-Insecure-Requests: 1
-User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.127 Safari/537.36 Edg/100.0.1185.44
-sec-ch-ua: " Not A;Brand";v="99", "Chromium";v="100", "Microsoft Edge";v="100"
-sec-ch-ua-mobile: ?0
-sec-ch-ua-platform: "Windows"
-```
+- 自定义的Servlet程序：重写具体的doGet()/doPost()方法。
 
 
+## 1.7 HttpServletRequest 类 
 
-# HttpServletRequest 类 
-
-## HttpServletRequest 类的作用 
+### 1.7.1 HttpServletRequest 类的作用 
 
 ​		每次只要有请求进入 Tomcat 服务器，Tomcat 服务器就会把请求过来的HTTP 协议信息解析好封装到 Request 对象中。然后传递到 service 方法（doGet 和 doPost）中给我们使用。**我们可以通过 HttpServletRequest 对象，获取到所有请求的信息**。 
 
-## HttpServletRequest 类的常用方法 
+### 1.7.2 HttpServletRequest 类的常用方法 
 
-方法名|说明
-:-:|:-:
-getRequestURI()| 获取请求的资源路径
-getRequestURL() |获取请求的统一资源定位符（绝对路径）
-getRemoteHost() |获取客户端的 ip 地址 
-getHeader() |获取请求头 
-**getParameter()** |**获取请求的参数** 
-**getParameterValues()** |**获取请求的参数（多个值的时候使用）** 
-**getMethod()**| **获取请求的方式 GET 或 POST** 
-**setAttribute(key, value)**|**设置域数据** 
-**getAttribute(key)**|**获取域数据** 
-**getRequestDispatcher()**| **获取请求转发对象** 
+|            方法名            |                  说明                  |
+| :--------------------------: | :------------------------------------: |
+|       getRequestURI()        |           获取请求的资源路径           |
+|       getRequestURL()        |  获取请求的统一资源定位符（绝对路径）  |
+|       getRemoteHost()        |          获取客户端的 ip 地址          |
+|         getHeader()          |               获取请求头               |
+|      **getParameter()**      |           **获取请求的参数**           |
+|   **getParameterValues()**   | **获取请求的参数（多个值的时候使用）** |
+|       **getMethod()**        |     **获取请求的方式 GET 或 POST**     |
+| **setAttribute(key, value)** |             **设置域数据**             |
+|    **getAttribute(key)**     |             **获取域数据**             |
+|  **getRequestDispatcher()**  |          **获取请求转发对象**          |
 
-```java
-package com.x17.Servlet;
-
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServlet;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-
-import java.io.IOException;
-
-public class RequestAPIServlet extends HttpServlet {
-    @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-//        getRequestURI()获取请求的资源路径
-        System.out.println("URI:" + req.getRequestURI());
-//        getRequestURL()获取请求的统一资源定位符（绝对路径）
-        System.out.println("URL:" + req.getRequestURL());
-//        getRemoteHost()获取客户端的 ip 地址
-        System.out.println("ip:" + req.getRemoteHost());
-//        getHeader()获取请求头
-        System.out.println("请求头：" + req.getHeader("Host"));
-//        getMethod()获取请求的方式 GET 或 POST
-        System.out.println("请求的方式：" + req.getMethod());
-    }
-}
-```
-
-## HttpServletRequest类获取请求的参数
+### 1.7.3 HttpServletRequest类获取请求的参数
 
 **HTML页面**
 
 ```HTML
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
 <body>
 <form action="parameterServlet" method="post">
     用户名：<input type="text" name="username"><br>
@@ -457,22 +229,11 @@ public class RequestAPIServlet extends HttpServlet {
     <input type="submit">
 </form>
 </body>
-</html>
 ```
 
 **java代码**
 
 ```java
-package com.x17.Servlet;
-
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServlet;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-
-import java.io.IOException;
-import java.util.Arrays;
-
 public class ParameterServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -501,7 +262,7 @@ public class ParameterServlet extends HttpServlet {
 }
 ```
 
-## 请求的转发 
+### 1.7.4 请求转发 
 
 请求转发是指，服务器收到请求后，从一次资源跳转到另一个资源的操作叫**请求转发**。
 
@@ -510,16 +271,6 @@ Servlet1和Servlet2共同完整一个完整的业务功能。
 **Servlet1**
 
 ```java
-package com.x17.Servlet;
-
-import jakarta.servlet.RequestDispatcher;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServlet;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-
-import java.io.IOException;
-
 public class Servlet1 extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -540,15 +291,6 @@ public class Servlet1 extends HttpServlet {
 **Servlet2**
 
 ```java
-package com.x17.Servlet;
-
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServlet;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-
-import java.io.IOException;
-
 public class Servlet2 extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -564,7 +306,7 @@ public class Servlet2 extends HttpServlet {
 }
 ```
 
-### 请求转发的特点
+### 1.7.5 请求转发的特点
 
 - 浏览器地址栏没有变化
 - 他们是一次请求
@@ -572,11 +314,11 @@ public class Servlet2 extends HttpServlet {
 - 可以转发到WEB-INF目录下（WEB-INF中的资源受保护，不被浏览器访问）
 - 不可以访问工程以外的资源
 
-# HttpServletResponse 类
+## 1.8 HttpServletResponse 类
 
 ​		HttpServletResponse 类和 HttpServletRequest 类一样。每次请求进来，Tomcat 服务器都会创建一个 Response 对象传递给 Servlet 程序去使用。HttpServletRequest 表示请求过来的信息，HttpServletResponse 表示所有响应的信息， 我们如果需要设置返回给客户端的信息，都可以通过 HttpServletResponse对象来进行设置。
 
-## 两个输出流 
+**两个输出流** 
 
 | 输出流 |       方法        |             作用             |
 | :----: | :---------------: | :--------------------------: |
@@ -585,19 +327,9 @@ public class Servlet2 extends HttpServlet {
 
 **两个流同时只能使用一个。 使用了字节流，就不能再使用字符流，反之亦然，否则就会报错。**
 
-## 向客户端回传数据
+### 1.8.1 向客户端回传数据
 
 ```java
-package com.x17.Servlet;
-
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServlet;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-
-import java.io.IOException;
-import java.io.PrintWriter;
-
 public class ResponseIOServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -607,7 +339,7 @@ public class ResponseIOServlet extends HttpServlet {
 }
 ```
 
-#### 解决响应的中文乱码
+### 1.8.2 解决响应的中文乱码
 
 ```java
 //方案一
@@ -622,11 +354,11 @@ resp.setContentType("text/html; charset=UTF-8");
 // 此方法一定要在获取流对象之前调用才有效
 ```
 
-## 请求重定向
+## 1.8.3 重定向
 
 ​		我们的某个程序的接口因为某些原因不可使用（比如被废弃了），我们用另一个程序来替代这个接口，然后客户端再次请求我们原程序，那么我们就要返回给客户端我们新程序的地址同时使客户端访问到我们这个新地址，这个过程叫做请求重定向。
 
-### 请求重定向的特点
+## 1.8.4 请求重定向的特点
 
 - 浏览器地址栏会发生变化
 - 两次请求
@@ -683,9 +415,197 @@ public class Response2 extends HttpServlet {
 }
 ```
 
-# 会话
+## 1.9 ServletConfig类
 
-###   1） Http是无状态的
+ServletConfig类是Servlet 程序的配置信息类。
+
+ Servlet 程序和 ServletConfig 对象都是由 Tomcat 负责创建，我们负责使用。 Servlet 程序默认是第一次访问的时候创建，**ServletConfig 在每个 Servlet 程序创建时，就创建一个对应的 ServletConfig 对象**。
+
+### 1.9.1 ServletConfig 类的三大作用 
+
+1、可以获取 Servlet 程序的别名 servlet-name 的值 
+
+2、获取初始化参数 init-param 
+
+3、获取 ServletContext
+
+**web.xml配置**
+
+```XML
+<servlet>
+     <servlet-name>HelloServlet</servlet-name>
+     <servlet-class>com.x17.servlets.HelloServlet</servlet-class>
+    <!--init-param 是初始化参数-->
+    <init-param>
+        <!--是参数名-->
+        <param-name>username</param-name>
+        <!--是参数值-->
+        <param-value>root</param-value>
+    </init-param>
+    <!--init-param 是初始化参数-->
+    <init-param>
+        <!--是参数名-->
+        <param-name>url</param-name>
+        <!--是参数值-->
+        <param-value>jdbc:mysql://localhost:3306/hello</param-value>
+    </init-param>
+</servlet>
+```
+
+在哪个类中使用就在哪个类的`<servlet>`中配置。ServletConfig类只能获取自己对应的初始化参数。
+
+```java
+// 1、可以获取 Servlet 程序的别名 servlet-name 的值
+System.out.println("HelloServlet 程序的别名是:" + servletConfig.getServletName());
+// 2、获取初始化参数 init-param
+System.out.println("初始化参数 username 的值是;" + servletConfig.getInitParameter("username"));
+System.out.println("初始化参数 url 的值是;" + servletConfig.getInitParameter("url"));
+// 3、获取 ServletContext 对象
+System.out.println(servletConfig.getServletContext());
+```
+
+注意：重写public void init(ServletConfig config)方法时，一定要调用父类中的init方法，否则servletConfig.getInitParameter(String var1)将会出错（空指针异常）。
+
+源代码：
+
+```java
+
+private transient ServletConfig config;
+public void init(ServletConfig config) throws ServletException {
+        this.config = config;
+        this.init();
+    }
+```
+
+原因：GenericServlet类将config保存起来了。子类重写不调用父类中的init方法的话，父类保存操作就会丢失。
+
+## 1.10 ServletContext 类
+
+1、ServletContext 是一个接口，它**表示 Servlet 上下文对象**。
+
+2、一个 web 工程，只有一个 ServletContext 对象实例。 
+
+3、**ServletContext 对象是一个域对象**。 
+
+4、**ServletContext 是在 web 工程部署启动的时候创建。在 web 工程停止的时候销毁。** 
+
+### 1.10.1 什么是域对象? 
+
+域对象，是可以像 Map 一样存取数据的对象，叫域对象。 这里的**域指的是存取数据的操作范围，整个 web 工程。**
+
+|        |     存数据     |     取数据     |     删除数据      |
+| :----: | :------------: | :------------: | :---------------: |
+|  Map   |     put()      |     get()      |     remove()      |
+| 域对象 | setAttribute() | getAttribute() | removeAttribute() |
+
+###  1.10.2 ServletContext 类的四个作用 
+
+1、获取 web.xml 中配置的上下文参数 context-param 
+
+2、获取当前的工程路径，格式: /工程路径 
+
+3、获取工程部署后在服务器硬盘上的绝对路径 
+
+4、像 Map 一样存取数据
+
+**web.xml配置文件**
+
+```XML
+<!--context-param 是上下文参数(它属于整个 web 工程)-->
+<context-param>
+    <param-name>username</param-name>
+    <param-value>context</param-value>
+</context-param>
+<servlet>
+    <servlet-name>ContextServlet</servlet-name>
+    <servlet-class>com.x17.servlets.ContextServlet</servlet-class>
+</servlet>
+<servlet-mapping>
+    <servlet-name>ContextServlet</servlet-name>
+     <url-pattern>/contextServlet</url-pattern>
+</servlet-mapping>
+```
+
+**java代码**
+
+```java
+//        1、获取 web.xml 中配置的上下文参数 context-param
+        ServletContext context = getServletConfig().getServletContext();
+/**也可直接ServletContext context = getServletContext();
+原因：在GenericServlet类中
+源代码：public ServletContext getServletContext() {
+        return this.getServletConfig().getServletContext();
+    }
+*/
+        String username = context.getInitParameter("username");
+//        2、获取当前的工程路径，格式: /工程路径
+        String contextPath = context.getContextPath();
+//        3、获取工程部署后在服务器硬盘上的绝对路径
+//        斜杠被服务器解析地址为:http://ip:port/工程名/ 映射到IDEA代码的web目录
+        String realPath = context.getRealPath("/");
+//        4、像 Map 一样存取数据
+        context.setAttribute("key","nalue");
+```
+
+由于ServletContext 是在 web 工程部署启动的时候创建。在 web 工程停止的时候销毁，在setAttribute之前key拿不到，在setAttribute之后，可以一直获取，其他类中的ServletContext对象也能获取。
+
+## 1.11 http协议
+
+### 1.11.1 GET请求
+
+请求行 (1) 请求的方式 GET (2) 请求的资源路径[+?+请求参数] (3) 请求的协议的版本号 HTTP/1.1
+
+请求头 key : value 组成 不同的键值对，表示不同的含义
+
+```
+GET /javaweb1/request HTTP/1.1  
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9
+Accept-Encoding: gzip, deflate, br
+Accept-Language: zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6
+Connection: keep-alive
+Cookie: JSESSIONID=9FF96178180A429BBA94B88A832A9C02
+Host: localhost:8080
+Sec-Fetch-Dest: document
+Sec-Fetch-Mode: navigate
+Sec-Fetch-Site: none
+Sec-Fetch-User: ?1
+Upgrade-Insecure-Requests: 1
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.127 Safari/537.36 Edg/100.0.1185.44
+sec-ch-ua: " Not A;Brand";v="99", "Chromium";v="100", "Microsoft Edge";v="100"
+sec-ch-ua-mobile: ?0
+sec-ch-ua-platform: "Windows"
+```
+
+### 1.11.2 POST请求
+
+请求行 (1) 请求的方式 POST (2) 请求的资源路径[+?+请求参数] (3) 请求的协议的版本号 HTTP/1.1
+
+请求头 key : value 组成 不同的键值对，表示不同的含义
+
+```
+POST /javaweb/hello HTTP/1.1
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9
+Accept-Encoding: gzip, deflate, br
+Accept-Language: zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6
+Cache-Control: max-age=0
+Connection: keep-alive
+Content-Length: 0
+Content-Type: application/x-www-form-urlencoded
+Host: localhost:8080
+Origin: http://localhost:8080
+Referer: http://localhost:8080/javaweb/a.html
+Sec-Fetch-Dest: document
+Sec-Fetch-Mode: navigate
+Sec-Fetch-Site: same-origin
+Sec-Fetch-User: ?1
+Upgrade-Insecure-Requests: 1
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.127 Safari/537.36 Edg/100.0.1185.44
+sec-ch-ua: " Not A;Brand";v="99", "Chromium";v="100", "Microsoft Edge";v="100"
+sec-ch-ua-mobile: ?0
+sec-ch-ua-platform: "Windows"
+```
+
+## 1.12 session
 
 - HTTP 无状态 ：服务器无法判断这两次请求是同一个客户端发过来的，还是不同的客户端发过来的
 
@@ -694,7 +614,7 @@ public class Response2 extends HttpServlet {
 - 通过会话跟踪技术来解决无状态的问题。
 
 
-### 2） 会话跟踪技术
+### 1.12.1  会话跟踪技术
 
 -   客户端第一次发请求给服务器，服务器获取session，获取不到，则创建新的，然后响应给客户端
 
@@ -710,7 +630,7 @@ public class Response2 extends HttpServlet {
           session.setMaxInactiveInterval()
           session.invalidate() -> 强制性让会话立即失效
 
-###  3） session保存作用域
+###  1.12.2 session保存作用域
 
 ​      session保存作用域是和具体的某一个session对应的
 ​      常用的API：
@@ -736,9 +656,9 @@ public class Demo01Session extends HttpServlet {
 }
 ```
 
-### 4）cookie
+## 1.13 cookie
 
-#### 如何创建 Cooki
+### 1.13.1 如何创建 Cookie
 
 ```java
 protected void createCookie(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -754,7 +674,7 @@ protected void createCookie(HttpServletRequest req, HttpServletResponse resp) th
 }
 ```
 
-#### 服务器如何获取 Cookie
+### 1.13.2 服务器如何获取 Cookie
 
 工具类
 
@@ -762,10 +682,6 @@ protected void createCookie(HttpServletRequest req, HttpServletResponse resp) th
 public class CookieUtils {
     /**
      * 查找指定名称的 Cookie 对象
-     *
-     * @param name
-     * @param cookies
-     * @return
      */
     public static Cookie findCookie(String name, Cookie[] cookies) {
         if (name == null || cookies == null || cookies.length == 0) {
@@ -805,7 +721,7 @@ protected void getCookie(HttpServletRequest req, HttpServletResponse resp) throw
 }
 ```
 
-#### Cookie 值的修改
+### 1.13.3 Cookie 值的修改
 
 ```java
 // 方案一：
@@ -825,102 +741,203 @@ if (cookie != null) {
 }
 ```
 
-#### Cookie 生命控制 
+### 1.13.4 Cookie 生命控制 
 
 Cookie 的生命控制指的是如何管理 Cookie 什么时候被销毁（删除） 
 
 setMaxAge() 正数，表示在指定的秒数后过期 负数，表示浏览器一关，Cookie 就会被删除（默认值是-1） 零，表示马上删除 Cookie
 
 ```java
- /**
-     * 设置存活 1 个小时的 Cooie
-     *
-     * @param req
-     * @param resp
-     * @throws ServletException
-     * @throws IOException
-     */
-    protected void life3600(HttpServletRequest req, HttpServletResponse resp) throws ServletException,
-            IOException {
-        Cookie cookie = new Cookie("life3600", "life3600");
-        cookie.setMaxAge(60 * 60); // 设置 Cookie 一小时之后被删除。无效
-        resp.addCookie(cookie);
-        resp.getWriter().write("已经创建了一个存活一小时的 Cookie");
-    }
+/**
+ * 设置存活 1 个小时的 Cooie
+ */
+protected void life3600(HttpServletRequest req, HttpServletResponse resp) throws ServletException,
+        IOException {
+    Cookie cookie = new Cookie("life3600", "life3600");
+    cookie.setMaxAge(60 * 60); // 设置 Cookie 一小时之后被删除。无效
+    resp.addCookie(cookie);
+    resp.getWriter().write("已经创建了一个存活一小时的 Cookie");
+}
 
-    /**
-     * 马上删除一个 Cookie
-     *
-     * @param req
-     * @param resp
-     * @throws ServletException
-     * @throws IOException
-     */
-    protected void deleteNow(HttpServletRequest req, HttpServletResponse resp) throws ServletException,
-            IOException {
+/**
+ * 马上删除一个 Cookie
+ */
+protected void deleteNow(HttpServletRequest req, HttpServletResponse resp) throws ServletException,
+        IOException {
 // 先找到你要删除的 Cookie 对象
-        Cookie cookie = CookieUtils.findCookie("key4", req.getCookies());
-        if (cookie != null) {
+    Cookie cookie = CookieUtils.findCookie("key4", req.getCookies());
+    if (cookie != null) {
 // 调用 setMaxAge(0);
-            cookie.setMaxAge(0); // 表示马上删除，都不需要等待浏览器关闭
+        cookie.setMaxAge(0); // 表示马上删除，都不需要等待浏览器关闭
 // 调用 response.addCookie(cookie);
-            resp.addCookie(cookie);
-            resp.getWriter().write("key4 的 Cookie 已经被删除");
-        }
-    }
-
-    /**
-     * 默认的会话级别的 Cookie
-     *
-     * @param req
-     * @param resp
-     * @throws ServletException
-     * @throws IOException
-     */
-    protected void defaultLife(HttpServletRequest req, HttpServletResponse resp) throws ServletException,
-            IOException {
-        Cookie cookie = new Cookie("defalutLife", "defaultLife");
-        cookie.setMaxAge(-1);//设置存活时间
         resp.addCookie(cookie);
+        resp.getWriter().write("key4 的 Cookie 已经被删除");
     }
+}
+
+/**
+ * 默认的会话级别的 Cookie
+ *
+ */
+protected void defaultLife(HttpServletRequest req, HttpServletResponse resp) throws ServletException,
+        IOException {
+    Cookie cookie = new Cookie("defalutLife", "defaultLife");
+    cookie.setMaxAge(-1);//设置存活时间
+    resp.addCookie(cookie);
+}
 ```
 
-# JSP
+## 1.14 Listener监听器
+
+**ServletContextListener 监听器** 
+
+- ServletContextListener 可以监听 ServletContext 对象的创建和销毁。
+
+- ServletContext 对象在 web 工程启动的时候创建，在 web 工程停止的时候销毁。
+
+- 监听到创建和销毁之后都会分别调用 ServletContextListener 监听器的方法反馈。
+
+
+```java
+/**
+* 在 ServletContext 对象创建之后马上调用，做初始化
+*/
+public void contextInitialized(ServletContextEvent sce);
+/**
+* 在 ServletContext 对象销毁之后调用
+*/
+public void contextDestroyed(ServletContextEvent sce)
+```
+
+**使用步骤如下：** 
+
+1、编写一个类去实现 ServletContextListener
+
+ 2、实现其两个回调方法
+
+3、到 web.xml 中去配置监听器
+
+**监听器实现类：**
+
+```java
+public class MyServletContextListenerImpl implements ServletContextListener {
+    @Override
+    public void contextInitialized(ServletContextEvent sce) {
+    	System.out.println("ServletContext 对象被创建了");
+	}
+    @Override
+    public void contextDestroyed(ServletContextEvent sce) {
+    	System.out.println("ServletContext 对象被销毁了");
+    }
+}
+```
+
+**web.xml 中的配置：**
+
+```xml
+<!--配置监听器-->
+<listener>
+	<listener-class>MyServletContextListenerImpl</listener-class>
+</listener>
+```
+
+## 1.15 Filter过滤器
+
+- Filter过滤器是JavaWeb的三大组件之一, 三大组件分别是: Servlet程序、Listener监听器、Filter过滤器
+- Filter过滤器,它是javaEE的规范,也就是接口
+- Filter过滤器他的作用是拦截请求过滤响应
+
+### 1.15.1 Filter过滤器的使用
+
+```java
+public class LoginFilter implements Filter {
+    @Override
+    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws ServletException, IOException {
+        HttpServletRequest req = (HttpServletRequest) request;
+
+        //获取session域中的username对象
+        Object username = req.getSession().getAttribute("username");
+        System.out.println("用户信息是否为空: " +username);
+        if (username == null ){
+            //如果用户信息为空则,跳转去登录界面
+            req.getRequestDispatcher("/index.jsp").forward(request,response);
+        }else{
+            //如果用户信息不为空,则执行访问的目标资源
+            chain.doFilter(request,response);
+        }
+    }
+}
+```
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns="http://xmlns.jcp.org/xml/ns/javaee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_4_0.xsd"
+         version="4.0">
+    <!--filter标签用于配置filter过滤器-->
+    <filter>
+        <!--filter-name标签用于创建filter的别名-->
+        <filter-name>LoginFilter</filter-name>
+        <!--filter-class标签用于指定filter过滤器的全类名-->
+        <filter-class>com.example.filter.LoginFilter</filter-class>
+    </filter>
+
+    <!--filter-mapping标签用于配置过滤器的拦截路径-->
+    <filter-mapping>
+        <!--filter-name标签是指定filter过滤器别名-->
+        <filter-name>LoginFilter</filter-name>
+
+        <!--url-pattern标签
+            / : 斜线表示指定到http://ip/port/工程路径/  映射到idea的web工程下
+            admin/* : 是只要拦截的地址, 当客户端访问此路径时要检测是否已登录
+        -->
+        <url-pattern>/admin/*</url-pattern>
+    </filter-mapping>
+</web-app>
+```
+
+### 1.15.2 Filter的生命周期
+
+Filter的生命周期有几个方法
+
+- 构造器方法
+
+- init()方法
+  -    第1、2步在web工程启动时执行
+- doFilter()方法  在拦截到请求时执行
+- destroy()方法 停止web工程时执行
+
+### 1.15.3 FilterConfiig类
+
+见名思意,FilterConfig类就是获取Filter过滤器的配置信息
+当web工程启动时,随着Filter过滤器的创建,FilterConfig也会创建,这里一个Filter过滤器对象对应着一个FilterConfig对象
+
+**FilterConfig常用的方法**:
+
+- 获取Filter过滤器的别名 : filterConfig.getFilterName()
+- 获取filter的初始化参数 : filterConfig.getInitParameter()
+- 获取ServletContext对象 : filterConfig.getServletContext()
+
+```java 
+public void init(FilterConfig filterConfig) throws ServletException {
+    System.out.println("Filter过滤器的名称为: " + filterConfig.getFilterName());
+    //获取Init参数需要在web.xml文件里配置好
+    System.out.println("Filter过滤器的url参数为: " + filterConfig.getInitParameter("url"));
+    System.out.println("Filter过滤器的ServletContext对象: " + filterConfig.getServletContext());
+}
+```
+
+# 第二章、JSP
 
 ​		jsp 的全换是 java server pages。Java 的服务器页面。 **jsp 的主要作用是代替 Servlet 程序回传 html 页面的数据**。 因为 Servlet 程序回传 html 页面数据是一件非常繁锁的事情。开发成本和维护成本都极高。
 
-## jsp 的本质
+## 2.1、jsp 的本质
 
 ​		 **jsp 页面本质上是一个 Servlet 程序**。 当我们第一次访问 jsp 页面的时候。Tomcat 服务器会帮我们把 jsp 页面翻译成为一个 java 源文件。并且对它进行编译成 为.class 字节码程序。**其底层实现，也是通过输出流。把 html 页面数据回传 给客户端**
 
-## jsp 的三种语法
+## 2.2 、jsp 的常用脚本
 
-### 头部的 page 指令 
-
-jsp 的 page 指令可以修改 jsp 页面中一些重要的属性，或者行为。
-
-```jsp
- <%@ page contentType="text/html;charset=UTF-8" language="java" %>
-```
-
-- language 属性 ：表示 jsp 翻译后是什么语言文件。暂时只支持 java。 
-- contentType 属性 ：表示 jsp 返回的数据类型是什么。也是源码中 response.setContentType()参数值 
-- pageEncoding 属性 ：表示当前 jsp 页面文件本身的字符集。 
-- import 属性 ：跟 java 源代码中一样。用于导包，导类。
-
- ========================以下两个属性是给 out 输出流使用============================= 
-
-- autoFlush 属性： 设置当 out 输出流缓冲区满了之后，是否自动刷新冲级区。默认值是 true。
-- buffer 属性： 设置 out 缓冲区的大小。默认是 8kb
-
-- errorPage 属性： 设置当 jsp 页面运行时出错，自动跳转去的错误页面路径。
-- isErrorPage 属性 ：设置当前 jsp 页面是否是错误信息页面。默认是 false。如果是 true ，可以获取异常信息。
-- session 属性 ：设置访问当前 jsp 页面，是否会创建 HttpSession 对象。默认是 true。
-- extends 属性： 设置 jsp 翻译出来的 java 类默认继承谁
-
-### jsp 中的常用脚本
-
-#### 声明脚本(极少使用) 
+### 2.2.1、 声明脚本(极少使用) 
 
 ```jsp
  <%! 声明 java 代码 %> 
@@ -959,7 +976,7 @@ jsp 的 page 指令可以修改 jsp 页面中一些重要的属性，或者行�
 %>
 ```
 
-#### 表达式脚本（常用）
+### 2.2.2、表达式脚本（常用）
 
 ```jsp
 <%= 变量/返回值/表达式 % > 
@@ -976,7 +993,7 @@ jsp 的 page 指令可以修改 jsp 页面中一些重要的属性，或者行�
 - 表达式中不能出现多条语句
 - 表达式中的内容一定是字符串类型，或者能通过toString()转换为字符串
 
-#### 代码脚本 
+### 2.2.3、代码脚本 
 
 ```jsp
  <% java语句 %>
@@ -1026,7 +1043,7 @@ jsp 的 page 指令可以修改 jsp 页面中一些重要的属性，或者行�
 %>
 ```
 
-## jsp 四大域对象
+## 2.3、jsp 四大域对象
 
  域对象是可以像 Map 一样存取数据的对象。四个域对象功能一样。不同的是它们对数据的存取范围
 域对象|数据存取范围
@@ -1040,9 +1057,32 @@ application (ServletContext 类) |整个 web 工程范围内都有效（只要 w
 
 pageContext ====>>> request ====>>> session ====>>> application
 
-## jsp 的常用标签
+## 2.4、jsp指令 
 
-### 静态包含
+jsp 的 page 指令可以修改 jsp 页面中一些重要的属性，或者行为。
+
+```jsp
+ <%@ page contentType="text/html;charset=UTF-8" language="java" %>
+```
+
+- language 属性 ：表示 jsp 翻译后是什么语言文件。暂时只支持 java。 
+- contentType 属性 ：表示 jsp 返回的数据类型是什么。也是源码中 response.setContentType()参数值 
+- pageEncoding 属性 ：表示当前 jsp 页面文件本身的字符集。 
+- import 属性 ：跟 java 源代码中一样。用于导包，导类。
+
+ ========================以下两个属性是给 out 输出流使用============================= 
+
+- autoFlush 属性： 设置当 out 输出流缓冲区满了之后，是否自动刷新冲级区。默认值是 true。
+- buffer 属性： 设置 out 缓冲区的大小。默认是 8kb
+
+- errorPage 属性： 设置当 jsp 页面运行时出错，自动跳转去的错误页面路径。
+- isErrorPage 属性 ：设置当前 jsp 页面是否是错误信息页面。默认是 false。如果是 true ，可以获取异常信息。
+- session 属性 ：设置访问当前 jsp 页面，是否会创建 HttpSession 对象。默认是 true。
+- extends 属性： 设置 jsp 翻译出来的 java 类默认继承谁
+
+## 2.5、jsp 动作
+
+### 2.5.1、静态包含
 
 ```jsp
 <%@ include file="路径"%>
@@ -1054,7 +1094,7 @@ pageContext ====>>> request ====>>> session ====>>> application
 --%>
 ```
 
-### 动态包含 
+### 2.5.2、动态包含 
 
 ```jsp
 <jsp:include page=""></jsp:include>
@@ -1070,76 +1110,24 @@ pageContext ====>>> request ====>>> session ====>>> application
 
 3、动态包含，还可以传递参数
 
-### 请求转发
+### 2.5.3、请求转发
 
 ```jsp
 <jsp:forward page=""></jsp:forward>
 ```
 
-## Listener监听器
+## 2.6 EL表达式
 
-### ServletContextListener 监听器 
+- EL 表达式的全称是：Expression Language，是表达式语言。
 
-ServletContextListener 可以监听 ServletContext 对象的创建和销毁。
+- 作用：EL 表达式主要是代替 jsp 页面中的表达式脚本在 jsp 页面中进行数据的输出。 因为 EL 表达式在输出数据的时候，要比 jsp 的表达式脚本要简洁很多
 
-ServletContext 对象在 web 工程启动的时候创建，在 web 工程停止的时候销毁。
+- EL 表达式的格式是：${表达式} 
 
-监听到创建和销毁之后都会分别调用 ServletContextListener 监听器的方法反馈。
+- EL 表达式在输出 null 值的时候，输出的是空串。jsp 表达式脚本输出 null 值的时候，输出null
 
-```java
-/**
-* 在 ServletContext 对象创建之后马上调用，做初始化
-*/
-public void contextInitialized(ServletContextEvent sce);
-/**
-* 在 ServletContext 对象销毁之后调用
-*/
-public void contextDestroyed(ServletContextEvent sce)
-```
 
-使用步骤如下： 
-
-1、编写一个类去实现 ServletContextListener
-
- 2、实现其两个回调方法
-
-3、到 web.xml 中去配置监听器
-
-**监听器实现类：**
-
-```java
-public class MyServletContextListenerImpl implements ServletContextListener {
-    @Override
-    public void contextInitialized(ServletContextEvent sce) {
-    	System.out.println("ServletContext 对象被创建了");
-	}
-    @Override
-    public void contextDestroyed(ServletContextEvent sce) {
-    	System.out.println("ServletContext 对象被销毁了");
-    }
-}
-```
-
-**web.xml 中的配置：**
-
-```xml
-<!--配置监听器-->
-<listener>
-<listener-class>MyServletContextListenerImpl</listener-class>
-</listener>
-```
-
-# EL表达式
-
-EL 表达式的全称是：Expression Language，是表达式语言。
-
-作用：EL 表达式主要是代替 jsp 页面中的表达式脚本在 jsp 页面中进行数据的输出。 因为 EL 表达式在输出数据的时候，要比 jsp 的表达式脚本要简洁很多
-
-EL 表达式的格式是：${表达式} 
-
-EL 表达式在输出 null 值的时候，输出的是空串。jsp 表达式脚本输出 null 值的时候，输出null
-
-**EL表达式和jsp对比**
+### 2.6.1 EL表达式和jsp对比
 
 ```jsp
 <body>
@@ -1152,7 +1140,7 @@ EL 表达式输出 key 的值是：${key1}
 </body>
 ```
 
-## EL 表达式输出 JavaBean 的普通属性
+### 2.6.2 EL 表达式输出 JavaBean 的普通属性
 
 Person 类
 
@@ -1199,7 +1187,7 @@ jsp页面
 </body>
 ```
 
-## EL 表达式的 11 个隐含对象 
+### 2.6.3 EL 表达式的 11 个隐含对象 
 
  变量| 类型 |作用 
 -|-|-
@@ -1214,7 +1202,7 @@ sessionScope |Map| 它可以获取 Session 域中的数据
  headerValues |Map| 它可以获取请求头的信息，它可以获取多个值的情况
  cookie| Map| 它可以获取当前请求的 Cookie 信息
 
-# JSTL 标签库
+## 2.7 JSTL 标签库
 
  JSTL 标签库， 全称是指 JSP Standard Tag Library， JSP 标准标签库。是一个不断完善的开放源代码的 JSP 标 签库。 
 
@@ -1230,7 +1218,7 @@ EL 表达式主要是为了替换 jsp 中的表达式脚本，而标签库则是
 数据库(不使用) |http://java.sun.com/jsp/jstl/sql |sql 
 XML(不使用) |http://java.sun.com/jsp/jstl/xml| x
 
-## core 核心库使用
+### 2.7.1 core 核心库使用
 
 **<c:set />（使用很少）** 
 
@@ -1287,7 +1275,6 @@ if 标签用来做 if 判断
 	request.setAttribute("height", 180);
 %>
 <c:choose>
-    <%-- 这是 html 注释 --%>
     <c:when test="${ requestScope.height > 190 }">
     <h2>小巨人</h2>
     </c:when>
@@ -1334,9 +1321,11 @@ if 标签用来做 if 判断
 </table>
 ```
 
-# 文件的上传和下载
+# 第三章、Javaweb常用功能
 
-## 文件的上传
+## 3.1 文件的上传和下载
+
+### 3.1.1文件的上传
 
 1. 要有一个 form 标签，method=post 请求 
 2. form 标签的 encType 属性值必须为 **multipart/form-data** 值
@@ -1345,7 +1334,7 @@ if 标签用来做 if 判断
 
 encType=multipart/form-data 表示提交的数据，以多段（每一个表单项一个数据段）的形式进行拼接，然后以二进制流的形式发送给服务器
 
-### commons-fileupload.jar 常用 API 介绍说明 
+**commons-fileupload.jar 常用 API 介绍说明** 
 
 commons-fileupload.jar 需要依赖 commons-io.jar 这个包，所以两个包我们都要引入。
 
@@ -1422,7 +1411,7 @@ public class UploadServlet extends HttpServlet {
 }
 ```
 
-## 文件下载
+### 3.1.2 文件下载
 
 下载的常用 API 说明：
 
@@ -1492,3 +1481,55 @@ public class DownloadServlet extends HttpServlet {
 }
 ```
 
+## 3.2 谷歌验证码
+
+1、导入谷歌验证码的jar 包
+kaptcha-2.3.2.jar
+2、在web.xml 中去配置用于生成验证码的Servlet 程序
+```xml
+<servlet>
+    <servlet-name>KaptchaServlet</servlet-name>
+    <servlet-class>com.google.code.kaptcha.servlet.KaptchaServlet</servlet-class>
+</servlet>
+<servlet-mapping>
+    <servlet-name>KaptchaServlet</servlet-name>
+    <url-pattern>/kaptcha.jpg</url-pattern>
+</servlet-mapping>
+```
+3、在表单中使用img 标签去显示验证码图片并使用它
+```html
+<form action="http://localhost:8080/tmp/registServlet" method="get">
+    用户名：<input type="text" name="username" > <br>
+    验证码：<input type="text" style="width: 80px;" name="code">
+    <img src="http://localhost:8080/tmp/kaptcha.jpg" alt="" style="width: 100px; height: 28px;"> <br>
+    <input type="submit" value="登录">
+</form>
+```
+4、在服务器获取谷歌生成的验证码和客户端发送过来的验证码比较使用。
+
+```java
+@Override
+protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException,
+IOException {
+    // 获取Session 中的验证码
+    String token = (String) req.getSession().getAttribute(KAPTCHA_SESSION_KEY);
+    // 删除Session 中的验证码
+    req.getSession().removeAttribute(KAPTCHA_SESSION_KEY);
+    String code = req.getParameter("code");
+    // 获取用户名
+    String username = req.getParameter("username");
+    if (token != null && token.equalsIgnoreCase(code)) {
+        System.out.println("保存到数据库：" + username);
+        resp.sendRedirect(req.getContextPath() + "/ok.jsp");
+    } else {
+        System.out.println("请不要重复提交表单");
+    }
+}
+```
+切换验证码：
+```js
+// 给验证码的图片，绑定单击事件
+$("#code_img").click(function () {
+    this.src = "${basePath}kaptcha.jpg?d=" + new Date();
+});
+```

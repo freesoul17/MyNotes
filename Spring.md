@@ -1,14 +1,23 @@
-# Spring
+# 一、IoC管理Bean
 
-## IoC操作Bean管理
+**IoC（Inversion of ConTrol) 控制反转**
 
-IoC（Inversion of ConTrol ，控制反转)
+- 使用对象时，由主动产生对象转换为由**外部**提供对象，此过程中对象创建控制权由程序转移到**外部**，此思想成为控制反转
+
+**Spring技术对IoC思想进行了实现**
+
+- Spring提供了一个容器，称为IoC容器，用来充当IoC思想的“外部”
+- IoC容器负责对象的创建、初始化等一系列工作，被创建或管理的对象在IoC容器中被称为Bean
+
+**DI（Dependency InJection）依赖注入**
+
+- 在容器中建立bean与bean之间的依赖关系的整个过程，称为依赖注入
 
 Bean管理就是通过Spring创建对象、注入属性
 
-### 基于xml
+## 1.1 基于xml管理
 
-#### set注入
+### 1.1.2 set注入
 
 Student类
 
@@ -51,7 +60,7 @@ public void StudentTest(){
 
 > **注意：该方法创建对象先执行空参构造器，所以必须要有空参构造器。且属性注入是通过setter注入，必须要有setter方法**
 
-#### 构造注入
+### 1.1.3 构造注入
 
 student类和测试同上
 
@@ -82,7 +91,7 @@ bean.xml
 
 > **此方式必须有带参构造器**
 
-#### P命名空间注入
+### 1.1.4 P命名空间注入
 
 student类和测试同上
 
@@ -103,7 +112,7 @@ bean.xml
 
 > **注意：该方法创建对象先执行空参构造器，所以必须要有空参构造器。且属性注入是通过setter注入，必须要有setter方法**
 
-#### 注入特殊值
+### 1.1.5 注入特殊值
 
 1、使用转义字符
 
@@ -133,7 +142,7 @@ bean.xml
 
 测试输出：Student{name='<<17>>', age=20}
 
-#### 注入外部Bean
+### 1.1.6 注入外部Bean
 
 Student类
 
@@ -180,7 +189,7 @@ bean.xml
 
 测试不变，结果为：Student{name='17', age=20, teacher=Teacher{name='王老师', age=42}}
 
-#### 注入内部Bean
+### 1.1.7注入内部Bean
 
 Student类、Teacher类、测试同上
 
@@ -206,7 +215,7 @@ bean.xml
 
 测试结果为：Student{name='17', age=20, teacher=Teacher{name='王老师', age=42}}
 
-#### 注入集合属性
+### 1.1.8注入集合属性
 
 Teacher类、测试同上
 
@@ -283,7 +292,7 @@ bean.xml
 
 测试结果：Student{name='17', age=20, teacher=[Teacher{name='王老师', age=42}, Teacher{name='李老师', age=43}], course=[语文, 数学, 英语], score={语文=96, 数学=96, 英语=96}, club=[计算机俱乐部, 机器人协会], info={2=呜呜呜, 1=哈哈哈}}
 
-#### bean的实例化管理
+### 1.1.8bean的实例化管理
 
 在 Spring 里面，默认情况下，bean 是单例模式，即创建单实例对象。
 
@@ -321,7 +330,7 @@ com.x17.pojo.Teacher@17211155
 
 > **提示：不要改变默认的单例配置。Spring的核心功能就是对Bean进行合理管理，在实际开发中很少见到取消单例配置的处理操作**
 
-#### bean 生命周期
+### 1.1.9bean 生命周期
 
 1. 通过构造器创建 bean 实例（无参构造）
 
@@ -419,7 +428,7 @@ public void kidTest(){
 
 > **注意：加了后置处理器后，每个Bean实例都会使用**
 
-#### 自动装配
+### 1.1.10自动装配
 
 autowire属性：
 
@@ -440,7 +449,7 @@ byName：通过名称自动装配
 </beans>
 ```
 
-#### 注入外部属性
+### 1.1.11注入外部属性
 
 jdbc.properties
 
@@ -470,10 +479,20 @@ bean.xml
         <property name="username" value="${prop.userName}"></property>
         <property name="password" value="${prop.password}"></property>
     </bean>
+    
+    
+    不加载系统属性
+    <context:property-placeholder location="jdbc.properties" system-properties-mode="NEVER"/>
+    加载多个properties文件
+    <context:property-placeholder location="jdbc.properties,jdbc2.properties"/>
+    加载当前类下所有properties文件
+    <context:property-placeholder location="*.properties"/>
+    加载properties文件标准格式
+    <context:property-placeholder location="classpath:jdbc.properties"/>
 </beans>
 ```
 
-### 基于注解
+## 1.2 基于注解管理
 
 **打开注解**
 
@@ -489,24 +508,25 @@ bean.xml
     <!--开启注解扫描，base-package指明要扫描的包-->
     <!--不同的包用逗号隔开，也可以直接使用上层包-->
     <context:component-scan base-package="com.x17"></context:component-scan>
+    
 <!-- use-default-filters="false" 表示现在不使用默认 filter，自己配置 filter-->
 <!-- context:include-filter ，设置扫描哪些内容-->
 <!--    <context:component-scan base-package="com.x17" use-default-filters="false">-->
 <!--        <context:include-filter type="annotation"-->
-<!--                                expression="org.springframework.stereotype.Controller"/>&lt;!&ndash;代表只扫描Controller注解的类&ndash;&gt;-->
+<!--                                expression="org.springframework.stereotype.Controller"/>代表只扫描Controller注解的类-->
 <!--    </context:component-scan>-->
 <!--     下面配置扫描包所有内容-->
 <!--     context:exclude-filter： 设置哪些内容不进行扫描-->
 <!--    <context:component-scan base-package="com.x17">-->
 <!--        <context:exclude-filter type="annotation"-->
 
-<!--                                expression="org.springframework.stereotype.Controller"/>&lt;!&ndash;表示Controller注解的类之外一切都进行扫描&ndash;&gt;-->
+<!--                                expression="org.springframework.stereotype.Controller"/>表示Controller注解的类之外一切都进行扫描-->
 <!--    </context:component-scan>-->
 
 </beans>
 ```
 
-#### 创建对象
+### 1.2.1 创建对象
 
 - @Component：定义组件
 - @Service：业务层注解
@@ -523,6 +543,10 @@ package com.x17.pojo;
 import org.springframework.stereotype.Component;
 //value可以省略不写，默认就是类名首字母小写
 @Component(value = "student")
+//或
+@Component("student")
+//或
+@Component
 public class Student {
     private String name;
     private int age;
@@ -530,7 +554,7 @@ public class Student {
 }    
 ```
 
-#### 注入属性
+### 1.2.2 注入属性
 
 @Autowired：根据属性类型进行自动装配
 
@@ -551,7 +575,7 @@ import org.springframework.stereotype.Component;
 public class Student {
     @Value(value = "17")
     private String name;
-    @Value(value = "20")
+    @Value("20")
     private int age;
     @Autowired
     private Teacher teacher;
@@ -575,7 +599,7 @@ public class Teacher {
 }
 ```
 
-#### 完全注解开发
+### 1.2.3 完全注解开发
 
 创建配置类，替代 xml 配置文件
 
@@ -584,12 +608,36 @@ package com.x17.config;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 @Configuration //作为配置类，替代 xml 配置文件
-@ComponentScan(basePackages = {"com.x17"})
+@ComponentScan(basePackages = {"com.x17"})//开启注解扫描
+@PropertySource("classpath:jdbc.properties")//加载外部配置文件，不允许使用通配符
+@Import(JdbcConfig.clsss)//导入其他配置类
 public class SpringConfig {
+}
+
+public class JdbcConfig{
+    @Bean//表示创建一个Bean
+    public DataSource dataSource(){
+        DruidDataSource ds = new DruidDataSource();
+        ds.setUsername("root");
+        .....
+        return ds;
+    }
+}
+
+@Component
+@Scope("prototype")//开启非单例
+public class Hello {
+    @PostConstruct//创建构造器后
+    public void init(){
+        
+    }
+    @PreDestory//销毁前
+    public void destroy(){
+    }
 }
 ```
 
-## AOP
+## 二、AOP
 
 AOP是一种编码范式，是**基于动态代理**的一种更高级的应用，可**结合AspectJ组件**，利用切面表达式织入到程序组成中，实现组件的解耦合设计。
 
@@ -603,7 +651,7 @@ AOP是一种编码范式，是**基于动态代理**的一种更高级的应用�
 
 - 切面（织入）：把通知应用到切入点过程
 
-### AOP切入点表达式
+### 2.1 AOP切入点表达式
 
 execution：定义通知的切入点。
 
@@ -622,7 +670,7 @@ execution(【注解】 【权限修饰符】【 方法返回值类型 】【操�
   - (*.java.lang.String)：以String作为最后一个参数，前面可以设置任意一个参数
 - 异常：可选，可以设置多个，用逗号分割
 
-### 注解方式
+### 2.2 注解方式
 
 Kid类
 
@@ -763,7 +811,7 @@ public void before() {
 
 @Order（数值）中数值从0开始，数字越小，优先级越高。
 
-### xml方式
+### 2.3 xml方式
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
@@ -788,11 +836,11 @@ public void before() {
 </beans>
 ```
 
-## JDBC操作模板
+## 三、JDBC操作模板
 
 JDBC Template 是Spring提供的一个简单到极致的JDBC操作模板组件，利用该组件可有效解决一些重复设计问题。依托Spring框架的IOC和AOP的操作特征，又可以实现连接配置以及事务处理控制。
 
-### **JDBC Template 和传统 JDBC对比**
+### **3.1 JDBC Template 和传统 JDBC对比**
 
 |          | 传统 JDBC开发                                                | JDBC Template                                                |
 | -------- | :----------------------------------------------------------- | ------------------------------------------------------------ |
@@ -800,7 +848,7 @@ JDBC Template 是Spring提供的一个简单到极致的JDBC操作模板组件�
 | 优点     | ①具备固定的操作流程，代码结构简单。②JDBC是Java的公共服务，属于标准。③由于没有涉及过于复杂的对象操作，所以性能是最高的 | ①代码简单，但又不脱离JDBC形式。②由于有Spring AOP的支持，用户只关心核心。③对于出现的异常可以采用统一的方式进行处理。④与JDBC的操作步骤或形式近乎雷同。 |
 | 缺点     | ①代码的冗余度太高。②用户需要手工进行事务的处理操作。③所有的操作必须严格按照既定的步骤执行。④如果出现执行异常，需要自己处理 | ①与重度包装的 ORMapping框架不同，不够智能。②处理返回结果的时候不能自动转化为VO类对象，需要手动处理结果集 |
 
-### **JdbcTemplate常用的操作方法**
+### **3.2 JdbcTemplate常用的操作方法**
 
 | 方法名称                                                     | 描述                                          |
 | ------------------------------------------------------------ | --------------------------------------------- |
@@ -838,7 +886,7 @@ JDBC Template 是Spring提供的一个简单到极致的JDBC操作模板组件�
 </beans>
 ```
 
-### Jdbc Template 实现CRUD操作
+### 3.3 Jdbc Template 实现CRUD操作
 
 数据库
 
@@ -1013,9 +1061,9 @@ public void addTest() {
 }
 ```
 
-## Spring事务管理
+## 四、Spring事务管理
 
-### 回顾传统JDBC及事务
+### 4.1 回顾传统JDBC及事务
 
 事务控制的核心是对数据库中数据操作的完整性保证。
 
@@ -1035,7 +1083,7 @@ public void addTest() {
 | rollback（）                       | 手动事务回滚       |
 | setSavepoint（String name）        | 设置事务保存点     |
 
-### 事务传播属性
+### 4.2事务传播属性
 
 事务传播属性指的是不同层之间进行的事务控制处理。传播属性在TransactionDefinition接口中定义。
 
@@ -1049,7 +1097,7 @@ public void addTest() {
 | NEVER         | 总是非事务的执行。如果存在活动事务，则抛出异常。             |
 | NESTED        | 如果存在活动事务，则将其运行在一个嵌套事务中。如果没有事务，则按REQUIRED属性执行。 |
 
-###   事务隔离级别
+###   4.3 事务隔离级别
 
 | 事务隔离级别       | 描述                                                         |
 | ------------------ | ------------------------------------------------------------ |
@@ -1059,7 +1107,7 @@ public void addTest() {
 | REPEATABLE_READ    | 可防止脏读、不可重复读，可能出现幻读                         |
 | SERIALIZABLE       | 最可靠的事务隔离级别，事务处理为顺序执行                     |
 
-### 注解实现声明式事务管理
+### 4.4 注解实现声明式事务管理
 
 使用**@Transaction**注解配置
 
@@ -1142,7 +1190,7 @@ public class BookService {
 
 使用@Transaction注解之后，当出现异常就会回滚，保证数据完整性。
 
-#### 完全注解开发
+#### 4.5 完全注解开发
 
 使用配置类，去除XML。
 
@@ -1193,5 +1241,4 @@ public class SpringConfig {
     }
 }
 ```
-
 
