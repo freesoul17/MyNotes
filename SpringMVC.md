@@ -26,9 +26,7 @@ Spring MVC 是 Spring 提供的一个基于 MVC 设计模式的轻量级 Web 开
 
 DispatcherServlet 是SpringMVC的前端控制器，它的任务就是拦截请求发送给 SpringMVC 控制器。
 
-**默认配置方式**
-
-此配置作用下，SpringMVC的配置文件默认位于WEB-INF下，默认名称为<servlet-name>-servlet.xml，例如，以下配置所对应SpringMVC的配置文件位于WEB-INF下，文件名为springMVC-servlet.xml
+servlet的配置文件默认位于WEB-INF下，默认名称为web.xml
 
 ```xml
 <!-- 配置SpringMVC的前端控制器，对浏览器发送的请求统一进行处理 -->
@@ -38,58 +36,33 @@ DispatcherServlet 是SpringMVC的前端控制器，它的任务就是拦截请�
 </servlet>
 <servlet-mapping>
     <servlet-name>springMVC</servlet-name>
-    <!--
-        设置springMVC的核心控制器所能处理的请求的请求路径
-        /所匹配的请求可以是/login或.html或.js或.css方式的请求路径
-        但是/不能匹配.jsp请求路径的请求
-    -->
     <url-pattern>/</url-pattern>
-</servlet-mapping>
-```
-
-**扩展配置方式**
-
-可通过init-param标签设置SpringMVC配置文件的位置和名称，通过load-on-startup标签设置SpringMVC前端控制器DispatcherServlet的初始化时间
-
-```xml
-<!-- 配置SpringMVC的前端控制器，对浏览器发送的请求统一进行处理 -->
-<servlet>
-    <servlet-name>springMVC</servlet-name>
-    <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
-    <!-- 通过初始化参数指定SpringMVC配置文件的位置和名称 -->
-    <init-param>
-        <!-- contextConfigLocation为固定值 -->
-        <param-name>contextConfigLocation</param-name>
-        <!-- 使用classpath:表示从类路径查找配置文件，例如maven工程中的src/main/resources -->
-        <param-value>classpath:springMVC.xml</param-value>
-    </init-param>
-    <!-- 
- 		作为框架的核心组件，在启动过程中有大量的初始化操作要做
-		而这些操作放在第一次请求时才执行会严重影响访问速度
-		因此需要通过此标签将启动控制DispatcherServlet的初始化时间提前到服务器启动时
-	-->
     <load-on-startup>1</load-on-startup>
-</servlet>
-<servlet-mapping>
-    <servlet-name>springMVC</servlet-name>
-    <!--
-        设置springMVC的核心控制器所能处理的请求的请求路径
-        /所匹配的请求可以是/login或.html或.js或.css方式的请求路径
-        但是/不能匹配.jsp请求路径的请求
-    -->
-    <url-pattern>/</url-pattern>
 </servlet-mapping>
 ```
 
-> 注：
->
-> <url-pattern>标签中使用/和/*的区别：
->
-> /所匹配的请求可以是/login或.html或.js或.css方式的请求路径，但是/不能匹配.jsp请求路径的请求
->
-> 因此就可以避免在访问jsp页面时，该请求被DispatcherServlet处理，从而找不到相应的页面
->
-> /* 则能够匹配所有请求，例如在使用过滤器时，若需要对所有请求进行过滤，就需要使用/* 的写法
+### 配置SpringMVC.xml文件
+
+```xml
+<!-- 自动扫描包 -->
+<context:component-scan base-package="com.x17.mvc.controller"/>
+
+<!-- 配置视图解析器 -->
+<bean id="viewResolver" class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+	<property name="prefix" value="/WEB-INF/views/"></property>
+    <property name="suffix" value=".jsp"></property>
+</bean>
+
+<!--mvc的注解驱动-->
+<MVC:annotation-driven/>
+
+<!--开放资源访问-->
+<mvc:resources mapping="/js/**" location="/js/" />
+<!--当spingmvc找不到资源时交由原始容器-->
+<mvc:default-servlet-handler/>
+```
+
+### spring.xml导入SpringMVC.xml文件
 
 ### 创建请求控制器
 
@@ -112,60 +85,6 @@ public class HelloController {
     }
 }
 ```
-
-配置xml文件
-
-```xml
-<!-- 自动扫描包 -->
-<context:component-scan base-package="com.x17.mvc.controller"/>
-
-<!-- 配置Thymeleaf视图解析器 -->
-<bean id="viewResolver" class="org.thymeleaf.spring5.view.ThymeleafViewResolver">
-    <property name="order" value="1"/>  <!--配置优先级-->
-    <property name="characterEncoding" value="UTF-8"/><!--解析时用的编码-->
-    <property name="templateEngine">
-        <bean class="org.thymeleaf.spring5.SpringTemplateEngine">
-            <property name="templateResolver">
-                <bean class="org.thymeleaf.spring5.templateresolver.SpringResourceTemplateResolver">
-    
-                    <!-- 视图前缀 -->
-                    <property name="prefix" value="/WEB-INF/templates/"/>
-    
-                    <!-- 视图后缀 -->
-                    <property name="suffix" value=".html"/>
-                    <property name="templateMode" value="HTML5"/>
-                    <property name="characterEncoding" value="UTF-8" />
-                </bean>
-            </property>
-        </bean>
-    </property>
-</bean>
-
-<!-- 
-   处理静态资源，例如html、js、css、jpg
-  若只设置该标签，则只能访问静态资源，其他请求则无法访问
-  此时必须设置<mvc:annotation-driven/>解决问题
- -->
-<mvc:default-servlet-handler/>
-
-<!-- 开启mvc注解驱动 -->
-<mvc:annotation-driven>
-    <mvc:message-converters>
-        <!-- 处理响应中文内容乱码 -->
-        <bean class="org.springframework.http.converter.StringHttpMessageConverter">
-            <property name="defaultCharset" value="UTF-8" />
-            <property name="supportedMediaTypes">
-                <list>
-                    <value>text/html</value>
-                    <value>application/json</value>
-                </list>
-            </property>
-        </bean>
-    </mvc:message-converters>
-</mvc:annotation-driven>
-```
-
-浏览器发送请求，若请求地址符合前端控制器的url-pattern，该请求就会被前端控制器DispatcherServlet处理。前端控制器会读取SpringMVC的核心配置文件，通过扫描组件找到控制器，将请求地址和控制器中@RequestMapping注解的value属性值进行匹配，若匹配成功，该注解所标识的控制器方法就是处理请求的方法。处理请求的方法需要返回一个字符串类型的视图名称，该视图名称会被视图解析器解析，加上前缀和后缀组成视图的路径，通过Thymeleaf对视图进行渲染，最终转发到视图所对应页面
 
 # @RequestMapping注解
 
@@ -337,6 +256,63 @@ public String testRest(@PathVariable("id") String id, @PathVariable("username") 
 //最终输出的内容为-->id:1,username:admin
 ```
 
+# SpringMVC的视图
+
+SpringMVC中的视图是View接口，视图的作用渲染数据，将模型Model中的数据展示给用户
+
+SpringMVC视图的种类很多，默认有转发视图和重定向视图
+
+当工程引入jstl的依赖，转发视图会自动转换为JstlView
+
+若使用的视图技术为Thymeleaf，在SpringMVC的配置文件中配置了Thymeleaf的视图解析器，由此视图解析器解析之后所得到的是ThymeleafView
+
+### 1、视图控制器
+
+当控制器方法中所设置的**视图名称没有任何前缀**时，此时的视图名称会被SpringMVC配置文件中所配置的视图解析器解析，视图名称拼接视图前缀和视图后缀所得到的最终路径，会通过转发的方式实现跳转
+
+```java
+@RequestMapping("/testHello")
+public String testHello(){
+    return "hello";
+}
+```
+
+### 2、转发视图
+
+SpringMVC中默认的转发视图是**InternalResourceView**
+
+SpringMVC中创建转发视图的情况：
+
+当控制器方法中所设置的**视图名称以"forward:"为前缀时**，创建InternalResourceView视图，此时的视图名称不会被SpringMVC配置文件中所配置的视图解析器解析，而是会将前缀"forward:"去掉，剩余部分作为最终路径通过转发的方式实现跳转
+
+例如"forward:/"，“forward:/employee”
+
+```java
+@RequestMapping("/testForward")
+public String testForward(){
+    return "forward:/testHello";
+}
+```
+
+### 3、重定向视图
+
+SpringMVC中默认的重定向视图是**RedirectView**
+
+当控制器方法中所设置的**视图名称以"redirect:"为前缀时**，创建RedirectView视图，此时的视图名称不会被SpringMVC配置文件中所配置的视图解析器解析，而是会将前缀"redirect:"去掉，剩余部分作为最终路径通过重定向的方式实现跳转
+
+例如"redirect:/"，“redirect:/employee”
+
+```java
+@RequestMapping("/testRedirect")
+public String testRedirect(){
+    return "redirect:/testHello";
+}
+```
+
+> 注：
+>
+> 重定向视图在解析时，会先将redirect:前缀去掉，然后会判断剩余部分是否以 / 开头，若是则会自动拼接上下文路径
+
 # SpringMVC获取请求参数
 
 ### 1、通过ServletAPI获取
@@ -419,15 +395,6 @@ public String test_param(
 可以在控制器方法的形参位置设置一个实体类类型的形参，此时若浏览器传输的请求参数的参数名和实体类中的属性名一致，那么请求参数就会为此属性赋值
 
 ```java
-<form th:action="@{/testpojo}" method="post">
-    用户名：<input type="text" name="username"><br>
-    密码：<input type="password" name="password"><br>
-    性别：<input type="radio" name="sex" value="男">男<input type="radio" name="sex" value="女">女<br>
-    年龄：<input type="text" name="age"><br>
-    邮箱：<input type="text" name="email"><br>
-    <input type="submit">
-</form>
-
 @RequestMapping("/testpojo")
 public String testPOJO(User user){
     System.out.println(user);
@@ -535,7 +502,7 @@ public class ExtendedModelMap extends ModelMap implements Model {}
 public class BindingAwareModelMap extends ExtendedModelMap {}
 ```
 
-<img src="C:\Users\17\AppData\Roaming\Typora\typora-user-images\image-20220706222823012.png" alt="image-20220706222823012" style="zoom: 80%;" />
+<img src="img\image-20220706222823012.png" alt="image-20220706222823012" style="zoom: 80%;" />
 
 ### 7、向session域共享数据
 
@@ -558,86 +525,131 @@ public String testApplication(HttpSession session){
 }
 ```
 
-# SpringMVC的视图
+# HttpMessageConverter
 
-SpringMVC中的视图是View接口，视图的作用渲染数据，将模型Model中的数据展示给用户
+HttpMessageConverter，**报文信息转换器，将请求报文转换为Java对象，或将Java对象转换为响应报文**
 
-SpringMVC视图的种类很多，默认有转发视图和重定向视图
+HttpMessageConverter提供了两个注解和两个类型：@RequestBody，@ResponseBody，RequestEntity，
 
-当工程引入jstl的依赖，转发视图会自动转换为JstlView
+ResponseEntity
 
-若使用的视图技术为Thymeleaf，在SpringMVC的配置文件中配置了Thymeleaf的视图解析器，由此视图解析器解析之后所得到的是ThymeleafView
+### 1、@RequestBody
 
-### 1、ThymeleafView
-
-当控制器方法中所设置的**视图名称没有任何前缀**时，此时的视图名称会被SpringMVC配置文件中所配置的视图解析器解析，视图名称拼接视图前缀和视图后缀所得到的最终路径，会通过转发的方式实现跳转
+@RequestBody可以获取请求体，需要在控制器方法设置一个形参，使用@RequestBody进行标识，当前请求的请求体就会为当前注解所标识的形参赋值
 
 ```java
-@RequestMapping("/testHello")
-public String testHello(){
-    return "hello";
+@RequestMapping("/testRequestBody")
+public String testRequestBody(@RequestBody String requestBody){
+    System.out.println("requestBody:"+requestBody);
+    return "success";
 }
 ```
 
-![在这里插入图片描述](https://img-blog.csdnimg.cn/781f6b299e6b41a8b006866ecbcb76ba.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80NDc1MTQzNA==,size_16,color_FFFFFF,t_70)
+### 2、RequestEntity
 
-### 2、转发视图
-
-SpringMVC中默认的转发视图是**InternalResourceView**
-
-SpringMVC中创建转发视图的情况：
-
-当控制器方法中所设置的**视图名称以"forward:"为前缀时**，创建InternalResourceView视图，此时的视图名称不会被SpringMVC配置文件中所配置的视图解析器解析，而是会将前缀"forward:"去掉，剩余部分作为最终路径通过转发的方式实现跳转
-
-例如"forward:/"，“forward:/employee”
+RequestEntity封装请求报文的一种类型，需要在控制器方法的形参中设置该类型的形参，当前请求的请求报文就会赋值给该形参，可以通过getHeaders()获取请求头信息，通过getBody()获取请求体信息
 
 ```java
-@RequestMapping("/testForward")
-public String testForward(){
-    return "forward:/testHello";
+@RequestMapping("/testRequestEntity")
+public String testRequestEntity(RequestEntity<String> requestEntity){
+    //当前requestEntity表示整个请求报文的信息
+    System.out.println("requestHeader:"+requestEntity.getHeaders());
+    System.out.println("requestBody:"+requestEntity.getBody());
+    return "success";
 }
 ```
 
-![在这里插入图片描述](https://img-blog.csdnimg.cn/71526c269bbb447b8701d906b2859965.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80NDc1MTQzNA==,size_16,color_FFFFFF,t_70)
+### 3、@ResponseBody
 
-### 3、重定向视图
-
-SpringMVC中默认的重定向视图是**RedirectView**
-
-当控制器方法中所设置的**视图名称以"redirect:"为前缀时**，创建RedirectView视图，此时的视图名称不会被SpringMVC配置文件中所配置的视图解析器解析，而是会将前缀"redirect:"去掉，剩余部分作为最终路径通过重定向的方式实现跳转
-
-例如"redirect:/"，“redirect:/employee”
+@ResponseBody用于标识一个控制器方法，可以将该方法的返回值直接作为响应报文的响应体响应到浏览器
 
 ```java
-@RequestMapping("/testRedirect")
-public String testRedirect(){
-    return "redirect:/testHello";
+@RequestMapping("/testResponseBody")
+@ResponseBody
+public String testResponseBody(){
+    return "success";
 }
 ```
 
-![在这里插入图片描述](https://img-blog.csdnimg.cn/ec5b5371ea804cafb27e2751231df362.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80NDc1MTQzNA==,size_16,color_FFFFFF,t_70)
+结果：浏览器页面显示success
 
-> 注：
->
-> 重定向视图在解析时，会先将redirect:前缀去掉，然后会判断剩余部分是否以 / 开头，若是则会自动拼接上下文路径
+### 4、SpringMVC处理json
 
-### 4、视图控制器view-controller
+@ResponseBody处理json的步骤：
 
-当控制器方法中，仅仅用来实现页面跳转，即只需要设置视图名称时，可以将处理器方法使用view-controller标签进行表示
+导入jackson的依赖
 
 ```xml
-<!--
-	path：设置处理的请求地址
-	view-name：设置请求地址所对应的视图名称
--->
-<mvc:view-controller path="/testView" view-name="success"></mvc:view-controller>
+<dependency>
+    <groupId>com.fasterxml.jackson.core</groupId>
+    <artifactId>jackson-databind</artifactId>
+    <version>2.12.1</version>
+</dependency>
 ```
 
-> 注：
->
-> 当SpringMVC中设置任何一个view-controller时，其他控制器中的请求映射将全部失效，此时需要在SpringMVC的核心配置文件中设置开启mvc注解驱动的标签：
->
-> <mvc:annotation-driven />
+在处理器方法上使用@ResponseBody注解进行标识
+
+将Java对象直接作为控制器方法的返回值返回，就会自动转换为Json格式的字符串
+
+```java
+@RequestMapping("/testResponseUser")
+@ResponseBody
+public User testResponseUser(){
+    return new User(1001,"admin","123456",23,"男");
+}
+```
+
+浏览器的页面中展示的结果：
+
+{“id”:1001,“username”:“admin”,“password”:“123456”,“age”:23,“sex”:“男”}
+
+### 5、SpringMVC处理ajax
+
+通过vue和axios处理点击事件：
+
+```html
+<script type="text/javascript" th:src="@{/static/js/vue.js}"></script>
+<script type="text/javascript" th:src="@{/static/js/axios.min.js}"></script>
+<script type="text/javascript">
+    var vue = new Vue({
+        el:"#app",
+        methods:{
+            testAjax:function (event) {
+                axios({
+                    method:"post",
+                    url:event.target.href,
+                    params:{
+                        username:"admin",
+                        password:"123456"
+                    }
+                }).then(function (response) {
+                    alert(response.data);
+                });
+                event.preventDefault();
+            }
+        }
+    });
+</script>
+```
+
+控制器方法：
+
+```java
+@RequestMapping("/testAjax")
+@ResponseBody
+public String testAjax(String username, String password){
+    System.out.println("username:"+username+",password:"+password);
+    return "hello,ajax";
+}
+```
+
+### 6、@RestController注解
+
+@RestController注解是springMVC提供的一个复合注解，**标识在控制器的类上**，就相当于为类添加了@Controller注解，并且为其中的每个方法添加了@ResponseBody注解（**@Controller+@ResponseBody**）
+
+### 7、ResponseEntity
+
+ResponseEntity用于控制器方法的返回值类型，该控制器方法的返回值就是响应到浏览器的响应报文
 
 # RESTful
 
@@ -717,529 +729,6 @@ b>当前请求必须传输请求参数_method
 >   String paramValue = request.getParameter(this.methodParam);
 >   ```
 
-# 八、RESTful案例
-
-### 1、准备工作
-
-和传统 CRUD 一样，实现对员工信息的增删改查。
-
-- 搭建环境
-
-- 准备实体类
-
-  ```java
-  package com.atguigu.mvc.bean;
-  
-  public class Employee {
-  
-     private Integer id;
-     private String lastName;
-  
-     private String email;
-     //1 male, 0 female
-     private Integer gender;
-     
-     public Integer getId() {
-        return id;
-     }
-  
-     public void setId(Integer id) {
-        this.id = id;
-     }
-  
-     public String getLastName() {
-        return lastName;
-     }
-  
-     public void setLastName(String lastName) {
-        this.lastName = lastName;
-     }
-  
-     public String getEmail() {
-        return email;
-     }
-  
-     public void setEmail(String email) {
-        this.email = email;
-     }
-  
-     public Integer getGender() {
-        return gender;
-     }
-  
-     public void setGender(Integer gender) {
-        this.gender = gender;
-     }
-  
-     public Employee(Integer id, String lastName, String email, Integer gender) {
-        super();
-        this.id = id;
-        this.lastName = lastName;
-        this.email = email;
-        this.gender = gender;
-     }
-  
-     public Employee() {
-     }
-  }
-  ```
-  
-- 准备dao模拟数据
-
-  ```java
-  package com.atguigu.mvc.dao;
-  
-  import java.util.Collection;
-  import java.util.HashMap;
-  import java.util.Map;
-  
-  import com.atguigu.mvc.bean.Employee;
-  import org.springframework.stereotype.Repository;
-  
-  
-  @Repository
-  public class EmployeeDao {
-  
-     private static Map<Integer, Employee> employees = null;
-     
-     static{
-        employees = new HashMap<Integer, Employee>();
-  
-        employees.put(1001, new Employee(1001, "E-AA", "aa@163.com", 1));
-        employees.put(1002, new Employee(1002, "E-BB", "bb@163.com", 1));
-        employees.put(1003, new Employee(1003, "E-CC", "cc@163.com", 0));
-        employees.put(1004, new Employee(1004, "E-DD", "dd@163.com", 0));
-        employees.put(1005, new Employee(1005, "E-EE", "ee@163.com", 1));
-     }
-     
-     private static Integer initId = 1006;
-     
-     public void save(Employee employee){
-        if(employee.getId() == null){
-           employee.setId(initId++);
-        }
-        employees.put(employee.getId(), employee);
-     }
-     
-     public Collection<Employee> getAll(){
-        return employees.values();
-     }
-     
-     public Employee get(Integer id){
-        return employees.get(id);
-     }
-     
-     public void delete(Integer id){
-        employees.remove(id);
-     }
-  }
-  ```
-
-### 2、功能清单
-
-| 功能                | URL 地址    | 请求方式 |
-| ------------------- | ----------- | -------- |
-| 访问首页√           | /           | GET      |
-| 查询全部数据√       | /employee   | GET      |
-| 删除√               | /employee/2 | DELETE   |
-| 跳转到添加数据页面√ | /toAdd      | GET      |
-| 执行保存√           | /employee   | POST     |
-| 跳转到更新数据页面√ | /employee/2 | GET      |
-| 执行更新√           | /employee   | PUT      |
-
-### 3、具体功能：访问首页
-
-##### a>配置view-controller
-
-```xml
-<mvc:view-controller path="/" view-name="index"/>
-```
-
-##### b>创建页面
-
-```html
-<!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8" >
-    <title>Title</title>
-</head>
-<body>
-<h1>首页</h1>
-<a th:href="@{/employee}">访问员工信息</a>
-</body>
-</html>
-```
-
-### 4、具体功能：查询所有员工数据
-
-##### a>控制器方法
-
-```java
-@RequestMapping(value = "/employee", method = RequestMethod.GET)
-public String getEmployeeList(Model model){
-    Collection<Employee> employeeList = employeeDao.getAll();
-    model.addAttribute("employeeList", employeeList);
-    return "employee_list";
-}
-```
-
-##### b>创建employee_list.html
-
-```html
-<!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8">
-    <title>Employee Info</title>
-    <script type="text/javascript" th:src="@{/static/js/vue.js}"></script>
-</head>
-<body>
-
-    <table border="1" cellpadding="0" cellspacing="0" style="text-align: center;" id="dataTable">
-        <tr>
-            <th colspan="5">Employee Info</th>
-        </tr>
-        <tr>
-            <th>id</th>
-            <th>lastName</th>
-            <th>email</th>
-            <th>gender</th>
-            <th>options(<a th:href="@{/toAdd}">add</a>)</th>
-        </tr>
-        <tr th:each="employee : ${employeeList}">
-            <td th:text="${employee.id}"></td>
-            <td th:text="${employee.lastName}"></td>
-            <td th:text="${employee.email}"></td>
-            <td th:text="${employee.gender}"></td>
-            <td>
-                <a class="deleteA" @click="deleteEmployee" th:href="@{'/employee/'+${employee.id}}">delete</a>
-                <a th:href="@{'/employee/'+${employee.id}}">update</a>
-            </td>
-        </tr>
-    </table>
-</body>
-</html>
-```
-
-### 5、具体功能：删除
-
-##### a>创建处理delete请求方式的表单
-
-```html
-<!-- 作用：通过超链接控制表单的提交，将post请求转换为delete请求 -->
-<form id="delete_form" method="post">
-    <!-- HiddenHttpMethodFilter要求：必须传输_method请求参数，并且值为最终的请求方式 -->
-    <input type="hidden" name="_method" value="delete"/>
-</form>
-```
-
-##### b>删除超链接绑定点击事件
-
-引入vue.js
-
-```html
-<script type="text/javascript" th:src="@{/static/js/vue.js}"></script>
-```
-
-删除超链接
-
-```html
-<a class="deleteA" @click="deleteEmployee" th:href="@{'/employee/'+${employee.id}}">delete</a>
-```
-
-通过vue处理点击事件
-
-```html
-<script type="text/javascript">
-    var vue = new Vue({
-        el:"#dataTable",
-        methods:{
-            //event表示当前事件
-            deleteEmployee:function (event) {
-                //通过id获取表单标签
-                var delete_form = document.getElementById("delete_form");
-                //将触发事件的超链接的href属性为表单的action属性赋值
-                delete_form.action = event.target.href;
-                //提交表单
-                delete_form.submit();
-                //阻止超链接的默认跳转行为
-                event.preventDefault();
-            }
-        }
-    });
-</script>
-```
-
-##### c>控制器方法
-
-```java
-@RequestMapping(value = "/employee/{id}", method = RequestMethod.DELETE)
-public String deleteEmployee(@PathVariable("id") Integer id){
-    employeeDao.delete(id);
-    return "redirect:/employee";
-}
-```
-
-### 6、具体功能：跳转到添加数据页面
-
-##### a>配置view-controller
-
-```xml
-<mvc:view-controller path="/toAdd" view-name="employee_add"></mvc:view-controller>
-```
-
-##### b>创建employee_add.html
-
-```html
-<!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8">
-    <title>Add Employee</title>
-</head>
-<body>
-
-<form th:action="@{/employee}" method="post">
-    lastName:<input type="text" name="lastName"><br>
-    email:<input type="text" name="email"><br>
-    gender:<input type="radio" name="gender" value="1">male
-    <input type="radio" name="gender" value="0">female<br>
-    <input type="submit" value="add"><br>
-</form>
-
-</body>
-</html>
-```
-
-### 7、具体功能：执行保存
-
-##### a>控制器方法
-
-```java
-@RequestMapping(value = "/employee", method = RequestMethod.POST)
-public String addEmployee(Employee employee){
-    employeeDao.save(employee);
-    return "redirect:/employee";
-}
-```
-
-### 8、具体功能：跳转到更新数据页面
-
-##### a>修改超链接
-
-```html
-<a th:href="@{'/employee/'+${employee.id}}">update</a>
-```
-
-##### b>控制器方法
-
-```java
-@RequestMapping(value = "/employee/{id}", method = RequestMethod.GET)
-public String getEmployeeById(@PathVariable("id") Integer id, Model model){
-    Employee employee = employeeDao.get(id);
-    model.addAttribute("employee", employee);
-    return "employee_update";
-}
-```
-
-##### c>创建employee_update.html
-
-```html
-<!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8">
-    <title>Update Employee</title>
-</head>
-<body>
-
-<form th:action="@{/employee}" method="post">
-    <input type="hidden" name="_method" value="put">
-    <input type="hidden" name="id" th:value="${employee.id}">
-    lastName:<input type="text" name="lastName" th:value="${employee.lastName}"><br>
-    email:<input type="text" name="email" th:value="${employee.email}"><br>
-    <!--
-        th:field="${employee.gender}"可用于单选框或复选框的回显
-        若单选框的value和employee.gender的值一致，则添加checked="checked"属性
-    -->
-    gender:<input type="radio" name="gender" value="1" th:field="${employee.gender}">male
-    <input type="radio" name="gender" value="0" th:field="${employee.gender}">female<br>
-    <input type="submit" value="update"><br>
-</form>
-
-</body>
-</html>
-```
-
-### 9、具体功能：执行更新
-
-##### a>控制器方法
-
-```java
-@RequestMapping(value = "/employee", method = RequestMethod.PUT)
-public String updateEmployee(Employee employee){
-    employeeDao.save(employee);
-    return "redirect:/employee";
-}
-```
-
-# HttpMessageConverter
-
-HttpMessageConverter，**报文信息转换器，将请求报文转换为Java对象，或将Java对象转换为响应报文**
-
-HttpMessageConverter提供了两个注解和两个类型：@RequestBody，@ResponseBody，RequestEntity，
-
-ResponseEntity
-
-### 1、@RequestBody
-
-@RequestBody可以获取请求体，需要在控制器方法设置一个形参，使用@RequestBody进行标识，当前请求的请求体就会为当前注解所标识的形参赋值
-
-```html
-<form th:action="@{/testRequestBody}" method="post">
-    用户名：<input type="text" name="username"><br>
-    密码：<input type="password" name="password"><br>
-    <input type="submit">
-</form>
-```
-
-```java
-@RequestMapping("/testRequestBody")
-public String testRequestBody(@RequestBody String requestBody){
-    System.out.println("requestBody:"+requestBody);
-    return "success";
-}
-```
-
-输出结果：
-
-requestBody:username=admin&password=123456
-
-### 2、RequestEntity
-
-RequestEntity封装请求报文的一种类型，需要在控制器方法的形参中设置该类型的形参，当前请求的请求报文就会赋值给该形参，可以通过getHeaders()获取请求头信息，通过getBody()获取请求体信息
-
-```java
-@RequestMapping("/testRequestEntity")
-public String testRequestEntity(RequestEntity<String> requestEntity){
-    //当前requestEntity表示整个请求报文的信息
-    System.out.println("requestHeader:"+requestEntity.getHeaders());
-    System.out.println("requestBody:"+requestEntity.getBody());
-    return "success";
-}
-```
-
-输出结果：
-requestHeader:[host:“localhost:8080”, connection:“keep-alive”, content-length:“27”, cache-control:“max-age=0”, sec-ch-ua:"" Not A;Brand";v=“99”, “Chromium”;v=“90”, “Google Chrome”;v=“90"”, sec-ch-ua-mobile:"?0", upgrade-insecure-requests:“1”, origin:“http://localhost:8080”, user-agent:“Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.93 Safari/537.36”]
-requestBody:username=admin&password=123
-
-### 3、@ResponseBody
-
-@ResponseBody用于标识一个控制器方法，可以将该方法的返回值直接作为响应报文的响应体响应到浏览器
-
-```java
-@RequestMapping("/testResponseBody")
-@ResponseBody
-public String testResponseBody(){
-    return "success";
-}
-```
-
-结果：浏览器页面显示success
-
-### 4、SpringMVC处理json
-
-@ResponseBody处理json的步骤：
-
-a>导入jackson的依赖
-
-```xml
-<dependency>
-    <groupId>com.fasterxml.jackson.core</groupId>
-    <artifactId>jackson-databind</artifactId>
-    <version>2.12.1</version>
-</dependency>
-```
-
-b>在SpringMVC的核心配置文件中开启mvc的注解驱动，此时在HandlerAdaptor中会自动装配一个消息转换器：MappingJackson2HttpMessageConverter，可以将响应到浏览器的Java对象转换为Json格式的字符串
-
-```xml
-<mvc:annotation-driven />
-```
-
-c>在处理器方法上使用@ResponseBody注解进行标识
-
-d>将Java对象直接作为控制器方法的返回值返回，就会自动转换为Json格式的字符串
-
-```java
-@RequestMapping("/testResponseUser")
-@ResponseBody
-public User testResponseUser(){
-    return new User(1001,"admin","123456",23,"男");
-}
-```
-
-浏览器的页面中展示的结果：
-
-{“id”:1001,“username”:“admin”,“password”:“123456”,“age”:23,“sex”:“男”}
-
-### 5、SpringMVC处理ajax
-
-a>请求超链接：
-
-```html
-<div id="app">
-	<a th:href="@{/testAjax}" @click="testAjax">testAjax</a><br>
-</div>
-```
-
-b>通过vue和axios处理点击事件：
-
-```html
-<script type="text/javascript" th:src="@{/static/js/vue.js}"></script>
-<script type="text/javascript" th:src="@{/static/js/axios.min.js}"></script>
-<script type="text/javascript">
-    var vue = new Vue({
-        el:"#app",
-        methods:{
-            testAjax:function (event) {
-                axios({
-                    method:"post",
-                    url:event.target.href,
-                    params:{
-                        username:"admin",
-                        password:"123456"
-                    }
-                }).then(function (response) {
-                    alert(response.data);
-                });
-                event.preventDefault();
-            }
-        }
-    });
-</script>
-```
-
-c>控制器方法：
-
-```java
-@RequestMapping("/testAjax")
-@ResponseBody
-public String testAjax(String username, String password){
-    System.out.println("username:"+username+",password:"+password);
-    return "hello,ajax";
-}
-```
-
-### 6、@RestController注解
-
-@RestController注解是springMVC提供的一个复合注解，**标识在控制器的类上**，就相当于为类添加了@Controller注解，并且为其中的每个方法添加了@ResponseBody注解（**@Controller+@ResponseBody**）
-
-### 7、ResponseEntity
-
-ResponseEntity用于控制器方法的返回值类型，该控制器方法的返回值就是响应到浏览器的响应报文
-
 # 文件上传和下载
 
 ### 1、文件下载
@@ -1275,7 +764,7 @@ public ResponseEntity<byte[]> testResponseEntity(HttpSession session) throws IOE
 
 ### 2、文件上传
 
-文件上传要求form表单的请求方式必须为post，并且添加属性enctype=“multipart/form-data”
+文件上传要求form表单的请求方式必须为post，并且添加属性 `enctype=“multipart/form-data”`
 
 SpringMVC中将上传的文件封装到MultipartFile对象中，通过此对象可以获取文件相关信息
 

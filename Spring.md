@@ -17,7 +17,59 @@ Bean管理就是通过Spring创建对象、注入属性
 
 ## 1.1 基于xml管理
 
-### 1.1.2 set注入
+### 1.1.1 创建对象
+
+Student类
+
+```java
+package com.x17.pojo;
+public class Student {
+    private String name;
+    private int age;
+    构造器、getter、setter、toString略
+}
+```
+
+bean.xml
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+    <!--id为唯一标识 ，class为全类名 -->
+    <!-- scope为可选，singleton为默认值，单例，在容器加载时就创建Bean, prototype则相反-->
+    <bean id="student" class="com.x17.pojo.Student" scope="prototype"></bean>
+</beans>
+```
+
+当 scope 的取值为 singleton 和 prototype 的区别
+
+|            | singleton                      | prototype                          |
+| ---------- | ------------------------------ | ---------------------------------- |
+| 实例化个数 | 1个                            | 多个                               |
+| 实例化时机 | 当 Spring 核心文件加载时实例化 | 当调用 getBean() 方法时实例化      |
+| 对象创建   | 应用加载，创建容器时           | 使用对象时                         |
+| 对象运行   | 只要容器在，对象一直活着       | 只要对象使用，就一直活着           |
+| 对象销毁   | 当应用卸载，销毁容器时         | 对象长时间不使用，被垃圾回收器回收 |
+
+**提示：不要改变默认的单例配置。Spring的核心功能就是对Bean进行合理管理，在实际开发中很少见到取消单例配置的处理操作**
+
+StudentTest
+
+```java
+@Test
+public void StudentTest(){
+   //启动Spring容器
+   ApplicationContext context=new ClassPathXmlApplicationContext("bean.xml");
+   Student student1=context.getBean("student",Student.class);//获取实例化对象
+   Student student2=context.getBean("student",Student.class);//获取实例化对象
+   System.out.println(student1 == student2);
+   //当scope为singleton时为true，scope为prototype时为false
+}
+```
+
+### 1.1.2 set注入属性
 
 Student类
 
@@ -50,7 +102,7 @@ StudentTest
 ```java
 @Test
 public void StudentTest(){
-//  启动Spring容器
+   //启动Spring容器
    ApplicationContext context=new ClassPathXmlApplicationContext("bean.xml");
    Student student=context.getBean("student",Student.class);//获取实例化对象
    System.out.println(student);
@@ -60,7 +112,7 @@ public void StudentTest(){
 
 > **注意：该方法创建对象先执行空参构造器，所以必须要有空参构造器。且属性注入是通过setter注入，必须要有setter方法**
 
-### 1.1.3 构造注入
+### 1.1.3 构造注入属性
 
 student类和测试同上
 
@@ -91,7 +143,7 @@ bean.xml
 
 > **此方式必须有带参构造器**
 
-### 1.1.4 P命名空间注入
+### 1.1.4 P命名空间注入属性
 
 student类和测试同上
 
@@ -105,14 +157,14 @@ bean.xml
        xmlns:p="http://www.springframework.org/schema/p"
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
     <bean id="student" class="com.x17.pojo.Student"
-    p:name="17" p:age="20"> <!--注入属性-->
+    p:name="17" p:age="20" > <!--注入属性-->
     </bean>
 </beans>
 ```
 
 > **注意：该方法创建对象先执行空参构造器，所以必须要有空参构造器。且属性注入是通过setter注入，必须要有setter方法**
 
-### 1.1.5 注入特殊值
+### 1.1.5 注入特殊值属性
 
 1、使用转义字符
 
@@ -142,7 +194,7 @@ bean.xml
 
 测试输出：Student{name='<<17>>', age=20}
 
-### 1.1.6 注入外部Bean
+### 1.1.6 注入外部Bean属性
 
 Student类
 
@@ -189,7 +241,7 @@ bean.xml
 
 测试不变，结果为：Student{name='17', age=20, teacher=Teacher{name='王老师', age=42}}
 
-### 1.1.7注入内部Bean
+### 1.1.7注入内部Bean属性
 
 Student类、Teacher类、测试同上
 
@@ -291,44 +343,6 @@ bean.xml
 ```
 
 测试结果：Student{name='17', age=20, teacher=[Teacher{name='王老师', age=42}, Teacher{name='李老师', age=43}], course=[语文, 数学, 英语], score={语文=96, 数学=96, 英语=96}, club=[计算机俱乐部, 机器人协会], info={2=呜呜呜, 1=哈哈哈}}
-
-### 1.1.8bean的实例化管理
-
-在 Spring 里面，默认情况下，bean 是单例模式，即创建单实例对象。
-
-测试（将Teacher类的toString()去掉。bean.xml中配置一个Teacher Bean
-
-```java
-@Test
-public void TeacherTest(){
-    ApplicationContext context=new ClassPathXmlApplicationContext("bean.xml");
-    Teacher teacher1=context.getBean("teacher",Teacher.class);
-    Teacher teacher2=context.getBean("teacher",Teacher.class);
-    System.out.println(teacher1);//com.x17.pojo.Teacher@5d11346a
-    System.out.println(teacher2);//com.x17.pojo.Teacher@5d11346a
- }
-```
-
-地址相同，确实是单实例对象
-
-如果不希望他是单实例对象，可以修改Bean配置的scope属性。
-
-- singleton，表示是单实例对象 （默认值）
-- prototype，表示是多实例对象
-
-```xml
-<bean id="teacher" class="com.x17.pojo.Teacher" scope="prototype">
-    <property name="name" value="李老师"/>
-    <property name="age" value="43"/>
-</bean>
-```
-
-再次测试结果为
-
-com.x17.pojo.Teacher@7a36aefa
-com.x17.pojo.Teacher@17211155
-
-> **提示：不要改变默认的单例配置。Spring的核心功能就是对Bean进行合理管理，在实际开发中很少见到取消单例配置的处理操作**
 
 ### 1.1.9bean 生命周期
 
@@ -494,150 +508,30 @@ bean.xml
 
 ## 1.2 基于注解管理
 
-**打开注解**
+### 1.2.1 spring注解
 
-bean.xml
+| 注解            | 说明                                          |
+| --------------- | --------------------------------------------- |
+| @Component      | 使用在类上用于实例化Bean                      |
+| @Controller     | 在web层用于实例化Bean                         |
+| @Service        | 在service层用于实例化Bean                     |
+| @Repository     | 在dao层用于实例化Bean                         |
+| @Autowired      | 根据类型依赖注入                              |
+| @Qualifier      | 结合@Autowired一起使用根据名称依赖注入        |
+| @Resource       | 相当于@Autowired+@Qualifier，根据名称依赖注入 |
+| @Value          | 注入普通属性                                  |
+| @Scope          | 标注Bean的作用范围                            |
+| @PostConstruct  | 标注Bean的初始化方法                          |
+| @PreDestroy     | 标注Bean的销毁方法                            |
+| @Configuration  | 指定当前类是一个Spring配置类                  |
+| @ComponentScan  | 用于指定Spring在初始化容器时要扫描的包        |
+| @Bean           | 将标注的方法的返回值加载到Spring容器中        |
+| @PropertySource | 用于加载properties文件中的配置                |
+| @Import         | 用于导入其他配置类                            |
 
-```xml
-<?xml version="1.0" encoding="UTF-8"?>
-<beans xmlns="http://www.springframework.org/schema/beans"
-       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-       xmlns:context="http://www.springframework.org/schema/context"
-       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
-                           http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
-    <!--开启注解扫描，base-package指明要扫描的包-->
-    <!--不同的包用逗号隔开，也可以直接使用上层包-->
-    <context:component-scan base-package="com.x17"></context:component-scan>
-    
-<!-- use-default-filters="false" 表示现在不使用默认 filter，自己配置 filter-->
-<!-- context:include-filter ，设置扫描哪些内容-->
-<!--    <context:component-scan base-package="com.x17" use-default-filters="false">-->
-<!--        <context:include-filter type="annotation"-->
-<!--                                expression="org.springframework.stereotype.Controller"/>代表只扫描Controller注解的类-->
-<!--    </context:component-scan>-->
-<!--     下面配置扫描包所有内容-->
-<!--     context:exclude-filter： 设置哪些内容不进行扫描-->
-<!--    <context:component-scan base-package="com.x17">-->
-<!--        <context:exclude-filter type="annotation"-->
+**@Service、@Controller、@Repository3个注解，打开源代码可以发现都包含@Component注解。实际上这4个注解功能是完全相同的，Spring为了描述的准确性，才设计了不同的名称**
 
-<!--                                expression="org.springframework.stereotype.Controller"/>表示Controller注解的类之外一切都进行扫描-->
-<!--    </context:component-scan>-->
-
-</beans>
-```
-
-### 1.2.1 创建对象
-
-- @Component：定义组件
-- @Service：业务层注解
-- @Controller：控制层注解
-- @Repository：数据层注解
-
-> @Service、@Controller、@Repository3个注解，打开源代码可以发现都包含@Component注解。实际上这4个注解功能是完全相同的，Spring为了描述的准确性，才设计了不同的名称
-
-Student类
-
-```java
-package com.x17.pojo;
-
-import org.springframework.stereotype.Component;
-//value可以省略不写，默认就是类名首字母小写
-@Component(value = "student")
-//或
-@Component("student")
-//或
-@Component
-public class Student {
-    private String name;
-    private int age;
-    private Teacher teacher;
-}    
-```
-
-### 1.2.2 注入属性
-
-@Autowired：根据属性类型进行自动装配
-
-@Qualifier：根据名称进行注入，和@Autowired 一起使用
-
-@Resource：可以根据类型注入，也可以根据名称注入（它属于javax包下的注解，不推荐使用！）
-
-@Value：注入普通类型属性
-
-Student类
-
-```java
-package com.x17.pojo;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
-@Component
-public class Student {
-    @Value(value = "17")
-    private String name;
-    @Value("20")
-    private int age;
-    @Autowired
-    private Teacher teacher;
-    //不需要setter方法，toString略
-}
-```
-
-Teacher类
-
-```java
-package com.x17.pojo;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
-@Component
-public class Teacher {
-    @Value(value = "王老师")
-    private String name;
-    @Value(value = "43")
-    private int age;
-    //不需要setter方法，toString略
-}
-```
-
-### 1.2.3 完全注解开发
-
-创建配置类，替代 xml 配置文件
-
-```java
-package com.x17.config;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Configuration;
-@Configuration //作为配置类，替代 xml 配置文件
-@ComponentScan(basePackages = {"com.x17"})//开启注解扫描
-@PropertySource("classpath:jdbc.properties")//加载外部配置文件，不允许使用通配符
-@Import(JdbcConfig.clsss)//导入其他配置类
-public class SpringConfig {
-}
-
-public class JdbcConfig{
-    @Bean//表示创建一个Bean
-    public DataSource dataSource(){
-        DruidDataSource ds = new DruidDataSource();
-        ds.setUsername("root");
-        .....
-        return ds;
-    }
-}
-
-@Component
-@Scope("prototype")//开启非单例
-public class Hello {
-    @PostConstruct//创建构造器后
-    public void init(){
-        
-    }
-    @PreDestory//销毁前
-    public void destroy(){
-    }
-}
-```
-
-## 二、AOP
+# 二、AOP
 
 AOP是一种编码范式，是**基于动态代理**的一种更高级的应用，可**结合AspectJ组件**，利用切面表达式织入到程序组成中，实现组件的解耦合设计。
 
@@ -651,7 +545,7 @@ AOP是一种编码范式，是**基于动态代理**的一种更高级的应用�
 
 - 切面（织入）：把通知应用到切入点过程
 
-### 2.1 AOP切入点表达式
+## 2.1 AOP切入点表达式
 
 execution：定义通知的切入点。
 
@@ -670,7 +564,7 @@ execution(【注解】 【权限修饰符】【 方法返回值类型 】【操�
   - (*.java.lang.String)：以String作为最后一个参数，前面可以设置任意一个参数
 - 异常：可选，可以设置多个，用逗号分割
 
-### 2.2 注解方式
+## 2.2 注解方式
 
 Kid类
 
@@ -788,7 +682,7 @@ after.........
 
 后三个先后顺序和版本有关
 
-#### 抽取相同切入点
+### 抽取相同切入点
 
 上面每个execution都有相同的切入点，可以抽取出来
 
@@ -805,13 +699,13 @@ public void before() {
 }
 ```
 
-#### 增强类优先级
+### 增强类优先级
 
 当有多个增强类对一个方法做增强时，可使用@Order（数值）设置优先级，决定谁先后执行。
 
 @Order（数值）中数值从0开始，数字越小，优先级越高。
 
-### 2.3 xml方式
+## 2.3 xml方式
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
@@ -836,11 +730,11 @@ public void before() {
 </beans>
 ```
 
-## 三、JDBC操作模板
+# 三、JDBC操作模板
 
 JDBC Template 是Spring提供的一个简单到极致的JDBC操作模板组件，利用该组件可有效解决一些重复设计问题。依托Spring框架的IOC和AOP的操作特征，又可以实现连接配置以及事务处理控制。
 
-### **3.1 JDBC Template 和传统 JDBC对比**
+## **3.1 JDBC Template 和传统 JDBC对比**
 
 |          | 传统 JDBC开发                                                | JDBC Template                                                |
 | -------- | :----------------------------------------------------------- | ------------------------------------------------------------ |
@@ -848,7 +742,7 @@ JDBC Template 是Spring提供的一个简单到极致的JDBC操作模板组件�
 | 优点     | ①具备固定的操作流程，代码结构简单。②JDBC是Java的公共服务，属于标准。③由于没有涉及过于复杂的对象操作，所以性能是最高的 | ①代码简单，但又不脱离JDBC形式。②由于有Spring AOP的支持，用户只关心核心。③对于出现的异常可以采用统一的方式进行处理。④与JDBC的操作步骤或形式近乎雷同。 |
 | 缺点     | ①代码的冗余度太高。②用户需要手工进行事务的处理操作。③所有的操作必须严格按照既定的步骤执行。④如果出现执行异常，需要自己处理 | ①与重度包装的 ORMapping框架不同，不够智能。②处理返回结果的时候不能自动转化为VO类对象，需要手动处理结果集 |
 
-### **3.2 JdbcTemplate常用的操作方法**
+## **3.2 JdbcTemplate常用的操作方法**
 
 | 方法名称                                                     | 描述                                          |
 | ------------------------------------------------------------ | --------------------------------------------- |
@@ -875,7 +769,7 @@ JDBC Template 是Spring提供的一个简单到极致的JDBC操作模板组件�
           destroy-method="close">
         <property name="url" value="jdbc:mysql:///hello"/>
         <property name="username" value="root"/>
-        <property name="password" value="20020112xing"/>
+        <property name="password" value="root"/>
         <property name="driverClassName" value="com.mysql.jdbc.Driver"/>
     </bean>
     <!-- JdbcTemplate 对象 -->
@@ -886,7 +780,7 @@ JDBC Template 是Spring提供的一个简单到极致的JDBC操作模板组件�
 </beans>
 ```
 
-### 3.3 Jdbc Template 实现CRUD操作
+## 3.3 Jdbc Template 实现CRUD操作
 
 数据库
 
@@ -1061,20 +955,20 @@ public void addTest() {
 }
 ```
 
-## 四、Spring事务管理
+# 四、Spring事务管理
 
-### 4.1 回顾传统JDBC及事务
+## 4.1 回顾传统JDBC及事务
 
 事务控制的核心是对数据库中数据操作的完整性保证。
 
-#### 事务的ACID原则
+### 事务的ACID原则
 
 - 原子性（Atomicity）：一个事务的所有操作，要么全部提交，要么全部回滚。
 - 一致性（Consistency）：事务必须始终保持系统处于一致的状态，不管并发事务有多少。
 - 隔离性（Isolation）：事务之间互相隔离，一个事务不影响另一个事务的操作。
 - 持久性（Durability）：事务完成后，该事务对数据库所进行的更改将持久保存在数据库中。
 
-#### 传统JDBC事务管理
+### 传统JDBC事务管理
 
 | 方法                               | 描述               |
 | ---------------------------------- | ------------------ |
@@ -1083,7 +977,7 @@ public void addTest() {
 | rollback（）                       | 手动事务回滚       |
 | setSavepoint（String name）        | 设置事务保存点     |
 
-### 4.2事务传播属性
+## 4.2事务传播属性
 
 事务传播属性指的是不同层之间进行的事务控制处理。传播属性在TransactionDefinition接口中定义。
 
@@ -1097,7 +991,7 @@ public void addTest() {
 | NEVER         | 总是非事务的执行。如果存在活动事务，则抛出异常。             |
 | NESTED        | 如果存在活动事务，则将其运行在一个嵌套事务中。如果没有事务，则按REQUIRED属性执行。 |
 
-###   4.3 事务隔离级别
+##   4.3 事务隔离级别
 
 | 事务隔离级别       | 描述                                                         |
 | ------------------ | ------------------------------------------------------------ |
@@ -1107,7 +1001,7 @@ public void addTest() {
 | REPEATABLE_READ    | 可防止脏读、不可重复读，可能出现幻读                         |
 | SERIALIZABLE       | 最可靠的事务隔离级别，事务处理为顺序执行                     |
 
-### 4.4 注解实现声明式事务管理
+## 4.4 注解实现声明式事务管理
 
 使用**@Transaction**注解配置
 
@@ -1142,7 +1036,7 @@ bean.xml
           destroy-method="close">
         <property name="url" value="jdbc:mysql:///hello"/>
         <property name="username" value="root"/>
-        <property name="password" value="20020112xing"/>
+        <property name="password" value="root"/>
         <property name="driverClassName" value="com.mysql.cj.jdbc.Driver"/>
     </bean>
     <!-- JdbcTemplate 对象 -->
@@ -1190,7 +1084,7 @@ public class BookService {
 
 使用@Transaction注解之后，当出现异常就会回滚，保证数据完整性。
 
-#### 4.5 完全注解开发
+## 4.5 完全注解开发
 
 使用配置类，去除XML。
 
@@ -1220,7 +1114,7 @@ public class SpringConfig {
         druidDataSource.setDriverClassName("com.mysql.cj.jdbc.Driver");
         druidDataSource.setUrl("jdbc:mysql://localhost:3306/hello");
         druidDataSource.setUsername("root");
-        druidDataSource.setPassword("20020112xing");
+        druidDataSource.setPassword("root");
         return druidDataSource;
     }
 

@@ -46,7 +46,7 @@
 	<dependency>
 		<groupId>mysql</groupId>
 		<artifactId>mysql-connector-java</artifactId>
-		<version>5.1.3</version>
+		<version>8.1.3</version>
 		</dependency>
 </dependencies>
 ```
@@ -148,10 +148,49 @@ public class UserMapperTest {
         //提交事务
         //sqlSession.commit();
         System.out.println("result:" + result);
+        //关闭资源
+        sqlSession.close();
     }
 }
 ```
 - 此时需要手动提交事务，如果要自动提交事务，则在获取sqlSession对象时，使用`SqlSession sqlSession = sqlSessionFactory.openSession(true);`，传入一个Boolean类型的参数，值为true，这样就可以自动提交
+
+## mybaits工具类
+
+```java
+import java.io.IOException;
+import java.io.InputStream;
+ 
+import org.apache.ibatis.exceptions.ExceptionFactory;
+import org.apache.ibatis.io.Resources;
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
+import org.apache.ibatis.session.SqlSessionFactoryBuilder;
+ 
+public class MybatisSessionFactory {
+	private static final String FILE="mybatis-config.xml";
+    private static SqlSessionFactory sqlSessionFactory;
+ 
+    public static SqlSession getSession() {
+		try {
+			InputStream resourceAsStream = Resources.getResourceAsStream(FILE);
+			sqlSessionFactory=new SqlSessionFactoryBuilder().build(resourceAsStream);
+	    	SqlSession sqlSession=sqlSessionFactory.openSession();
+	    	return sqlSession;
+		} catch (IOException e) {
+			 throw ExceptionFactory.wrapException("Error building SqlSession.", e);
+		}  
+	private static  final ThreadLocal<SqlSession> THREAD_LOCAL=new ThreadLocal<>();
+    public static void closeSession(){
+        SqlSession sqlSession = THREAD_LOCAL.get();
+        THREAD_LOCAL.set(null);
+        if (sqlSession!=null){
+            sqlSession.close();
+        }
+    }
+}
+```
+
 ## 加入log4j日志功能
 1. 加入依赖
 	```xml
@@ -347,6 +386,7 @@ properties、settings、typeAliases、typeHandlers、objectFactory、objectWrapp
 </select>
 ```
 ## map集合类型的参数
+
 - 若mapper接口中的方法需要的参数为多个时，此时可以手动创建map集合，将这些数据放在map中只需要通过\${}和#{}访问map集合的键就可以获取相对应的值，注意${}需要手动加单引号
 ```xml
 <!--User checkLoginByMap(Map<String,Object> map);-->
@@ -886,8 +926,8 @@ public void getEmpAndDeptByStepOne() {
 ```
 ## where
 - where和if一般结合使用：
-	- 若where标签中的if条件都不满足，则where标签没有任何功能，即不会添加where关键字  
-	- 若where标签中的if条件满足，则where标签会自动添加where关键字，并将条件最前方多余的and/or去掉  
+  - 若where标签中的if条件都不满足，则where标签没有任何功能，即不会添加where关键字  
+  - 若where标签中的if条件满足，则where标签会自动添加where关键字，并将条件最前方多余的and/or去掉  
 ```xml
 <!--List<Emp> getEmpByCondition(Emp emp);-->
 <select id="getEmpByCondition" resultType="Emp">
