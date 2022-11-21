@@ -1,9 +1,7 @@
 # MyNotes
 My study notes,welcome to fork
 
-[git](https://github.com/JasonWu167/MyNotes/blob/master/git.md)
-
-[javaweb](https://github.com/JasonWu167/MyNotes/blob/master/javaweb.md)
+## 后端
 
 java
 
@@ -15,12 +13,24 @@ java
 
 [Javaweb](https://github.com/JasonWu167/MyNotes/blob/master/javaweb.md)
 
-[PL/SQL](https://github.com/JasonWu167/MyNotes/blob/master/PLSQL.md)
-
 [Spring](https://github.com/JasonWu167/MyNotes/blob/master/Spring.md)
 
 [SpringMVC](https://github.com/JasonWu167/MyNotes/blob/master/SpringMVC.md)
 
 [MyBaits](https://github.com/JasonWu167/MyNotes/blob/master/MyBatis.md)
 
+[ssm整合注解开发](https://github.com/JasonWu167/MyNotes/blob/master/ssm%E6%95%B4%E5%90%88%E6%B3%A8%E8%A7%A3%E5%BC%80%E5%8F%91.md)
+
+## 前端
+
+[css](https://github.com/JasonWu167/MyNotes/blob/master/css.md)
+
 [JavaScript](https://github.com/JasonWu167/MyNotes/blob/master/JavaScript.md)
+
+## 数据库
+
+[PL/SQL](https://github.com/JasonWu167/MyNotes/blob/master/PLSQL.md)
+
+## 其他
+
+[git](https://github.com/JasonWu167/MyNotes/blob/master/git.md)
